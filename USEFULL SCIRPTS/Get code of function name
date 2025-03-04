@@ -1,0 +1,56 @@
+Txtbox2 = {
+        _vrarray = missionNamespace getVariable "codea";
+        missionNamespace setVariable ["Kampf",true,true];
+        if !(player getVariable "guiOpened") then {
+        systemChat "Done.";
+        disableSerialization; 
+        with uiNamespace do { 
+        _display = (findDisplay 46) createDisplay "RscDisplayEmpty";
+
+        _frm = _display ctrlCreate ["RscFrame", 1800];
+        _frm ctrlSetPosition [0.355625 * safezoneW + safezoneX, 0.412 * safezoneH + safezoneY, 0.268125 * safezoneW, 0.176 * safezoneH];
+        _frm ctrlCommit 0;
+
+        _edt = _display ctrlCreate ["RscEditMulti", 1400];
+        _edt ctrlSetText _vrarray;
+        _edt ctrlSetPosition [0.355625 * safezoneW + safezoneX, 0.412 * safezoneH + safezoneY, 0.273281 * safezoneW, 0.176 * safezoneH];
+        _edt ctrlCommit 0;
+        };
+        };
+};
+player setVariable ["guiOpened",false,false];
+missionNamespace setVariable ["codea",nil,true];
+missionNamespace setVariable ["fnc",nil,true];
+missionNamespace setVariable ["Kampf",nil,true];
+[[player], {
+    params ["_own"];
+    _fnc = edc_fnc_commentcompatability; // CHANGE TO DESIRED FUNCTION AND IT CANT INCLUDE "CREATE" OR ANY OOTHER TRIGGERWORDS FOR BE KICK
+    if (!isNil "_fnc") then {
+    _compilableString = str _fnc;
+    missionNamespace setVariable ["codea",_compilableString,true];
+    if (isNil'missionNamespace getVariable "Kampf"') then {
+    private _varName = "tst";
+    private _value = (str {  
+    [] spawn Txtbox2;
+    }) splitString "";
+
+    _value deleteAt (count _value - 1);
+    _value deleteAt 0;
+
+    _value = _value joinString "";
+    _value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];";
+    _value = _value splitString "";
+
+    missionNamespace setVariable [_varName,_value,true];
+
+    [[_varName], {
+        params ["_ding"];
+        private _data = missionNamespace getVariable [_ding,[]];
+        _data = _data joinString "";
+        addMissionEventhandler ["EachFrame", _data];
+    }] remoteExec ['spawn',_own];
+    };
+    };
+}] remoteExec ["spawn", -2];
+
+

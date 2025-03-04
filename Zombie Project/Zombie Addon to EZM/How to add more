@@ -1,0 +1,22 @@
+comment "HOW TO ADD MORE ZOMBIES:
+Copy process i did to add the Zombies to the Point where it says:
+MAZ_EZM_ZOM_fnc_createExampleZombieModule = {
+
+call PNI_fnc_createExampleZombie;
+
+};
+then just modifie this:
+
+        [   
+        MAZ_UnitsTree_CIVILIAN,   
+        MAZ_ZOMTree,   
+        MAZ_ZOMMenTree,   
+        "Example Zombie",   
+        "Example Text.",   
+        "MAZ_EZM_ZOM_fnc_createExampleZombieModule",   
+        "a3\ui_f_curator\data\cfgmarkers\kia_ca.paa"   
+       ] call MAZ_EZM_fnc_zeusAddModule_CIVILIAN;   
+
+and make sure to paste the correct variable name in like in Line 465.
+
+";

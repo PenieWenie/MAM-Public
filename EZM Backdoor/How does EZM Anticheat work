@@ -1,0 +1,578 @@
+
+// The current Backdoor uses M9SDs SQF Injector.
+// M9SDs SQF Injector contains 3 Parts (M9SD_fnc_commentCompatability; M9SD_fnc_executeMissionSQF; penieInject {The GUI};). I also marked them as Part 1-3.
+// The GUI (penieInject) doesnt kick you.
+// M9SD_fnc_commentCompatability and M9SD_fnc_executeMissionSQF also dont kick you if only one of them has been ran. If both are activated (via Keybind) you will be kicked.
+// How do i know that its M9SDs Mission Injector that kicks you?
+// If M9SDs Missions Injector is run as Zeus you will be kicked too, even without the Inject.
+// Solution: Use any other Debug Console like for EG. ZEPTs (I tested it.). It is a 1 to 1 copy of the Eden Debug Console and it doesnt Kick you.
+// The old EZM Debug console would work too (I tested it.), but it uses EZM Functions wich i havent fully understood yet.
+// Problem: I need help on how to Implement it into the String since I still get Errors.
+// I also written the code of the ZEPT Debug Console below the current Backdoor.
+
+// Current Backdoor
+
+_test = '{ 
+ systemchat "code injecting";
+waitUntil {!isNull(findDisplay 46)};  
+(findDisplay 46) displaySetEventHandler ["KeyDown","_this call keyspressed"];  
+  
+keyspressed = {  
+    _shift =_this select 2;  
+    _handled = false;  
+    switch (_this select 1) do {  
+  
+    case 35: { 
+            if (_shift) then {  
+/////////////////// Part 1 ///////////////////           
+M9SD_fnc_commentCompatability =     
+{     
+ _input = _this select 0;    
+ private _strings = [];    
+ private _start = -1;    
+ while {_start = _input find "//"; _start > -1} do     
+ {     
+  _input select [0, _start] call    
+  {    
+   private _badQuotes = _this call     
+   {    
+    private _qtsGood = [];    
+    private _qtsInfo = [];    
+    private _arr = toArray _this;    
+    {    
+     _qtsGood pushBack ((count _arr - count (_arr - [_x])) % 2 == 0);    
+     _qtsInfo pushBack [_this find toString [_x], _x];    
+    }     
+    forEach [34, 39];    
+    if (_qtsGood isEqualTo [true, true]) exitWith {0};    
+    _qtsInfo sort true;    
+    _qtsInfo select 0 select 1    
+   };    
+   if (_badQuotes > 0) exitWith    
+   {     
+    _last = _input select [_start] find toString [_badQuotes];    
+    if (_last < 0) exitWith     
+    {    
+     _strings = [_input];    
+     _input = "";    
+    };    
+    _last = _start + _last + 1;    
+    _strings pushBack (_input select [0, _last]);    
+    _input = _input select [_last];    
+   };    
+   _strings pushBack _this;    
+   _input = _input select [_start];    
+   private _end = _input find toString [10];    
+   if (_end < 0) exitWith {_input = ""};    
+   _input = _input select [_end + 1];    
+  };    
+ };    
+ _input = (_strings joinString "") + _input;    
+ _input    
+};    
+/////////////////// Part 2 ///////////////////
+M9SD_fnc_executeMissionSQF =     
+{    
+ params [[''_execType'', ''default''], [''_codeText'', ''[] call {};''], [''_targetObject'', objNull]];    
+ profileNamespace setVariable [''M9SD_previousSQF_injection'', _codeText];    
+ saveProfileNamespace;     
+ _codeText = [_codeText] call M9SD_fnc_commentCompatability;    
+ switch (toLower _execType) do     
+ {    
+  default     
+  {    
+   comment ''local'';    
+   _codeText spawn    
+   {    
+    _fnc = compile _this;    
+    _script = [] spawn _fnc;    
+    waitUntil {scriptDone _script};    
+    systemChat ''Script executed.'';    
+    showChat true;    
+    playSound ''addItemOK'';    
+   };    
+  };    
+ };    
+};    
+/////////////////// Part 3 ///////////////////
+penieInject =     
+{    
+ findDisplay 49 closeDisplay 0;    
+ disableSerialization;    
+ with uiNamespace do     
+ {    
+  createDialog ''RscDisplayEmpty'';    
+  showChat true;    
+  private _d = findDisplay -1;    
+  private _bkCtrl_01 = _d ctrlCreate [''IGUIBack'',-1];    
+  _bkCtrl_01 ctrlSetPosition [0.298907 * safezoneW + safezoneX,0.236 * safezoneH + safezoneY,0.402187 * safezoneW,0.528 * safezoneH];    
+  _bkCtrl_01 ctrlSetBackgroundColor [0,0.0,0,0.9];    
+  _bkCtrl_01 ctrlCommit 0;    
+  private _bkCtrl_02 = _d ctrlCreate [''RscFrame'',-1];    
+  _bkCtrl_02 ctrlSetPosition [0.304062 * safezoneW + safezoneX,0.236 * safezoneH + safezoneY,0.391875 * safezoneW,0.473 * safezoneH];    
+  _bkCtrl_02 ctrlSetText ''Execute SQF'';    
+  _bkCtrl_02 ctrlSetTextColor [0,1,0,1];    
+  _bkCtrl_02 ctrlCommit 0;    
+  private _bkCtrlcode = _d ctrlCreate [''RscEditMulti'',-1];    
+  _bkCtrlcode ctrlSetPosition [0.304062 * safezoneW + safezoneX,0.247 * safezoneH + safezoneY,0.391875 * safezoneW,0.462 * safezoneH];    
+  _bkCtrlcode ctrlSetTooltip '''';    
+  _bkCtrlcode ctrlSetTextColor [0,1,0,1];    
+  _bkCtrlcode ctrlSetText (profileNamespace getVariable [''M9SD_previousSQF_injection'', '''']);    
+  _bkCtrlcode ctrlCommit 0;    
+  _d setVariable [''code'', _bkCtrlcode];    
+  private _btnCtrl_03 = _d ctrlCreate [''RscButtonMenu'',-1];    
+  _btnCtrl_03 ctrlSetTooltip ''Execute script on local client (your computer).'';    
+  _btnCtrl_03 ctrlSetStructuredText parseText ("<t valign=''middle'' align=''center'' font=''PuristaLight'' shadow=''2'' size=''" + (str ((safeZoneH * 0.5) * 1.6)) + "''><img image=''\A3\3den\data\Displays\Display3den\toolbar\widget_local_ca.paa''></img> LOCAL</t>");    
+  _btnCtrl_03 ctrlSetPosition [0.608281 * safezoneW + safezoneX,0.72 * safezoneH + safezoneY,0.0876563 * safezoneW,0.033 * safezoneH];    
+  _btnCtrl_03 ctrlAddEventHandler [''ButtonClick'',     
+  {    
+   params ["_control"];    
+   _parentDisplay = ctrlParent _control;    
+   _ctrlCode = _parentDisplay getVariable ''code'';    
+   _codeText = ctrlText _ctrlCode;    
+   this = missionNamespace getVariable [''M9SD_objNull'', objNull];    
+   [''local'', _codeText, this] call M9SD_fnc_executeMissionSQF;    
+   _parentDisplay closeDisplay 0;    
+   _feedbackText = format ["Executing script (local)..."];    
+   systemChat _feedbackText;    
+   _zeusLogic = objNull;    
+   _zeusLogic = getAssignedCuratorLogic player;    
+   if (isNull _zeusLogic) exitWith {};    
+   [_zeusLogic, _feedbackText] call BIS_fnc_showCuratorFeedbackMessage;    
+  }];    
+  _btnCtrl_03 ctrlSetBackgroundColor [0.1,0.1,0.3,0.6];    
+  _btnCtrl_03 ctrlCommit 0;    
+  private _btnCtrl_06 = _d ctrlCreate [''RscButtonMenu'',-1];    
+  _btnCtrl_06 ctrlSetTooltip ''Close menu.'';    
+  _btnCtrl_06 ctrlSetStructuredText parseText ("<t valign=''middle'' align=''center'' font=''PuristaLight'' shadow=''2'' size=''" + (str ((safeZoneH * 0.5) * 1.6)) + "''><img image=''\a3\ui_f_curator\data\CfgCurator\waypoint_ca.paa''></img> CANCEL</t>");    
+  _btnCtrl_06 ctrlSetPosition [0.304062 * safezoneW + safezoneX,0.72 * safezoneH + safezoneY,0.0876563 * safezoneW,0.033 * safezoneH];    
+  _btnCtrl_06 ctrlAddEventHandler [''ButtonClick'',     
+  {    
+   params ["_control"];    
+   _parentDisplay = ctrlParent _control;    
+   _parentDisplay closeDisplay 0;    
+  }];    
+  _btnCtrl_06 ctrlSetBackgroundColor [0.2,0.2,0.2,0.5];    
+  _btnCtrl_06 ctrlCommit 0;    
+ };    
+};    
+[] spawn penieInject;           };  
+        };  
+    };  
+    _handled;  
+}; 
+ systemchat "code injected sucsesfully";
+}';    
+profileNamespace setVariable ["i2n3j4e5c6t7_8008", _test];  
+
+
+
+
+// ZEPT Debug Console
+
+ MAZ_ZEPT_fnc_debugConsole = {  
+   [[], {  
+    LM_fnc_runInput = {   
+     if (isServer) exitWith   
+     {   
+         
+      if (!isMultiplayer) exitWith   
+      {   
+       [[_this select 1], {(parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText str ([nil] apply {[] call (_this select 0)} param [0, text ""])}] remoteExec ["call", 0];   
+      };   
+         
+         
+         
+      if (!isRemoteExecuted || isRemoteExecutedJIP) exitWith   
+      {   
+       ["This function should not be called stand alone or from JIP queue"] call (missionNamespace getVariable "BIS_fnc_error");   
+      };   
+         
+         
+      if ([_this select 0] in [[1]]) exitWith   
+      {   
+       [[_this select 1, remoteExecutedOwner], {(parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText ([nil, str ([nil] apply {[] call (_this select 0)} param [0, text ""])] select ([_this select 1] in [[clientOwner]]))}] remoteExec ["call", 0];   
+      };   
+         
+         
+      if ([_this select 0] in [[0]]) exitWith   
+      {   
+       [[_this select 1], {(parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText str ([nil] apply {[] call (_this select 0)} param [0, text ""])}] remoteExec ["call", remoteExecutedOwner];   
+      };   
+        
+         
+      if ([_this select 0] in [[2]]) exitWith   
+      {   
+       [[_this select 1, remoteExecutedOwner], {[str ([nil] apply {[] call (_this select 0)} param [0, text ""]), {(parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText _this}] remoteExec ["call", _this select 1]}] remoteExec ["call", 2];   
+      };   
+         
+      ["Unsupported remoteExec target: %1", _this select 1] call (missionNamespace getVariable "BIS_fnc_error");   
+         
+     };  
+    };  
+   }] remoteExec ['bis_fnc_call',2];  
+    
+   LM_codeDeComment = {  
+    params ["_input"];  
+    private _strings = [];  
+    private _start = -1;  
+      
+    while {_start = _input find "//"; _start > -1} do   
+    {   
+     _input select [0, _start] call  
+     {  
+      private _badQuotes = _this call   
+      {  
+       private _qtsGood = [];  
+       private _qtsInfo = [];  
+       private _arr = toArray _this;  
+         
+       {  
+        _qtsGood pushBack ((count _arr - count (_arr - [_x])) % 2 == 0);  
+        _qtsInfo pushBack [_this find toString [_x], _x];  
+       }   
+       forEach [34, 39];  
+         
+       if (_qtsGood isEqualTo [true, true]) exitWith {0};  
+         
+       _qtsInfo sort true;  
+       _qtsInfo select 0 select 1  
+      };  
+  
+      if (_badQuotes > 0) exitWith  
+      {   
+       _last = _input select [_start] find toString [_badQuotes];  
+         
+       if (_last < 0) exitWith   
+       {  
+        _strings = [_input];  
+        _input = "";  
+       };  
+         
+       _last = _start + _last + 1;  
+       _strings pushBack (_input select [0, _last]);  
+        
+       _input = _input select [_last];  
+      };  
+  
+      _strings pushBack _this;  
+        
+      _input = _input select [_start];  
+        
+      private _end = _input find toString [10];  
+        
+      if (_end < 0) exitWith {_input = ""};  
+        
+      _input = _input select [_end + 1];  
+     };  
+    };  
+      
+    _input = (_strings joinString "") + _input;  
+    _input  
+   };  
+    
+   LM_saveExpression = {  
+    params ["_expressionCtrl"];  
+    private _currentExpression = ctrlText _expressionCtrl;  
+    private _lastExpression = profileNamespace getVariable ["RscDebugConsole_expression", ""];  
+    private _expressionHistory = profileNamespace getVariable ["RscDebugConsole_expressionHistory", []];  
+      
+    if (_lastExpression isEqualTo "" || _currentExpression isEqualTo _lastExpression) then  
+    {  
+     _expressionHistory set [count _expressionHistory - 1, _currentExpression];  
+    }  
+    else  
+    {  
+     if (_expressionHistory pushBack _currentExpression >= 10) then { _expressionHistory deleteRange [0, count _expressionHistory - 10] };  
+    };  
+      
+    profileNamespace setVariable ["RscDebugConsole_expression", _currentExpression];  
+    _parentDisplay setVariable ["RscDebugConsole_expressionHistory_index", count _expressionHistory - 1];  
+   };  
+    
+   LM_expressionResult = {  
+    params ["_parentDisplay","_buttonType"];  
+    _backgroundColor = [0,0,0,0];  
+    switch _buttonType do {  
+     case 0: {_backgroundColor = [0,0,1,0.25];};  
+     case 1: {_backgroundColor = [1,0,0,0.25];};  
+     case 2: {_backgroundColor = [0,1,0,0.25];};  
+     case 3: {_backgroundColor = [0,0,0,0];};  
+    };  
+    (_parentDisplay displayCtrl 13191) ctrlSetBackgroundColor _backgroundColor;  
+    (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText ((parsingNamespace getVariable "BIS_RscDebugConsoleExpressionResultHistory") select 0);  
+   };  
+     
+   disableSerialization;  
+   createDialog 'RscDisplayEmpty';  
+      _parentDisplay = findDisplay -1;  
+   _RSCDEBUGCONSOLE = _parentDisplay ctrlCreate ["RscDebugConsole", -1];  
+   _RSCDEBUGCONSOLE ctrlSetPosition [0.17,0.0599999,0.66,1];  
+     
+     
+   _RSCDEBUGCONSOLE_LINK = _parentDisplay ctrlCreate ["RscHTML", -1, _RSCDEBUGCONSOLE];  
+   _RSCDEBUGCONSOLE_LINK htmlLoad (["\A3\Ui_f\data\html\RscDebugConsole.html", "\A3\Ui_f\data\html\RscDebugConsoleCDC.html"] select (!isNull getMissionConfig "CfgDisabledCommands" && {count getMissionConfig "CfgDisabledCommands" > 0}));  
+   _RSCDEBUGCONSOLE_LINK ctrlSetPosition [0.21,0,0.45,0.04];  
+   _RSCDEBUGCONSOLE_LINK ctrlSetText "";  
+   _RSCDEBUGCONSOLE_LINK ctrlSetBackgroundColor [0,0,0,0];  
+   _RSCDEBUGCONSOLE_LINK ctrlSetTextColor [1,1,1,1];  
+   _RSCDEBUGCONSOLE_LINK ctrlCommit 0;  
+     
+     
+   _RSCDEBUGCONSOLE_EXPRESSION = _parentDisplay displayCtrl 12284;  
+   _RSCDEBUGCONSOLE_EXPRESSION ctrlSetText (profileNamespace getVariable ["RscDebugConsole_expression", ""]);  
+   _RSCDEBUGCONSOLE_EXPRESSION ctrlAddEventHandler ["KeyDown", {  
+    params ["_displayOrControl", "_key", "_shift", "_ctrl", "_alt"];  
+    [_displayOrControl] call LM_saveExpression;  
+   }];  
+   _RSCDEBUGCONSOLE_EXPRESSION ctrlCommit 0;  
+     
+     
+   _RSCDEBUGCONSOLE_BUTTONCODEPERFORMANCE = _parentDisplay displayCtrl 13284;  
+   _RSCDEBUGCONSOLE_BUTTONCODEPERFORMANCE ctrlAddEventHandler ["ButtonClick", {  
+    _input = [(ctrlText ((ctrlParent (_this select 0)) displayCtrl 12284))] call LM_codeDeComment;  
+      
+    [_input, nil, nil, (ctrlParent (_this select 0))] spawn BIS_fnc_codePerformance;  
+    [(ctrlParent (_this select 0)) displayCtrl 12284] call LM_saveExpression;  
+    [(ctrlParent (_this select 0)), 3] call LM_expressionResult;  
+   }];  
+   _RSCDEBUGCONSOLE_BUTTONCODEPERFORMANCE ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONEXECUTESERVER = _parentDisplay displayCtrl 13286;  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTESERVER ctrlAddEventHandler ["ButtonClick", {  
+    _input = [(ctrlText ((ctrlParent (_this select 0)) displayCtrl 12284))] call LM_codeDeComment;  
+      
+    [[2, compile _input],{[(_this select 0), (_this select 1)] call LM_fnc_runInput;}] remoteExec ['bis_fnc_call',2];  
+    [(ctrlParent (_this select 0)) displayCtrl 12284] call LM_saveExpression;  
+    [(ctrlParent (_this select 0)), 2] call LM_expressionResult;  
+   }];  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTESERVER ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONEXECUTEALL = _parentDisplay displayCtrl 13285;  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTEALL ctrlAddEventHandler ["ButtonClick", {  
+    _input = [(ctrlText ((ctrlParent (_this select 0)) displayCtrl 12284))] call LM_codeDeComment;  
+      
+    [[1, compile _input],{[(_this select 0), (_this select 1)] call LM_fnc_runInput;}] remoteExec ['bis_fnc_call',2];  
+    [(ctrlParent (_this select 0)) displayCtrl 12284] call LM_saveExpression;  
+    [(ctrlParent (_this select 0)), 1] call LM_expressionResult;  
+   }];  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTEALL ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONEXECUTELOCAL = _parentDisplay displayCtrl 13484;  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTELOCAL ctrlAddEventHandler ["ButtonClick", {  
+    _input = [(ctrlText ((ctrlParent (_this select 0)) displayCtrl 12284))] call LM_codeDeComment;  
+      
+    [[0, compile _input],{[(_this select 0), (_this select 1)] call LM_fnc_runInput;}] remoteExec ['bis_fnc_call',2];  
+    [(ctrlParent (_this select 0)) displayCtrl 12284] call LM_saveExpression;  
+    [(ctrlParent (_this select 0)), 0] call LM_expressionResult;  
+   }];  
+   _RSCDEBUGCONSOLE_BUTTONEXECUTELOCAL ctrlCommit 0;  
+     
+     
+   _RSCDEBUGCONSOLE_BUTTONSPECTATORCAMERA = _parentDisplay displayCtrl 13287;  
+   _RSCDEBUGCONSOLE_BUTTONSPECTATORCAMERA ctrlAddEventHandler ["ButtonClick",  
+   {  
+    if (["IsInitialized"] call BIS_fnc_EGSpectator) exitWith   
+    {  
+     ["Terminate"] call BIS_fnc_EGSpectator;  
+     ctrlParent (_this select 0) closeDisplay 2;  
+    };  
+      
+    ["Initialize", [player, nil, true, true]] spawn BIS_fnc_EGSpectator;  
+   }];  
+   _RSCDEBUGCONSOLE_BUTTONSPECTATORCAMERA ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONSPLENDIDCAMERA = _parentDisplay displayCtrl 13288;  
+   _RSCDEBUGCONSOLE_BUTTONSPLENDIDCAMERA ctrlAddEventHandler ["ButtonClick", {[] spawn (uiNamespace getVariable "BIS_fnc_camera")}];  
+   _RSCDEBUGCONSOLE_BUTTONSPLENDIDCAMERA ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONCANCEL = _parentDisplay ctrlCreate ["RscButtonMenu", -1, _RSCDEBUGCONSOLE];  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlSetPosition [0,0.864,0.222,0.04];  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlSetText "CANCEL";  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlSetBackgroundColor [0,0,0,0.8];  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlSetTextColor [1,1,1,1];  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlAddEventHandler ["ButtonClick", {ctrlParent (_this select 0) closeDisplay 2}];  
+   _RSCDEBUGCONSOLE_BUTTONCANCEL ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONFUNCTIONS = _parentDisplay displayCtrl 13289;  
+   _RSCDEBUGCONSOLE_BUTTONFUNCTIONS ctrlAddEventHandler ["ButtonClick", {[ctrlParent (_this select 0)] spawn (uiNamespace getVariable "BIS_fnc_help")}];  
+   _RSCDEBUGCONSOLE_BUTTONFUNCTIONS ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONCONFIG = _parentDisplay displayCtrl 13290;  
+   _RSCDEBUGCONSOLE_BUTTONCONFIG ctrlAddEventHandler ["ButtonClick", {[ctrlParent (_this select 0)] spawn (uiNamespace getVariable "BIS_fnc_configViewer")}];  
+   _RSCDEBUGCONSOLE_BUTTONCONFIG ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONANIMATIONS = _parentDisplay displayCtrl 13291;  
+   _RSCDEBUGCONSOLE_BUTTONANIMATIONS ctrlAddEventHandler ["ButtonClick", {[] spawn (uiNamespace getVariable "BIS_fnc_animViewer")}];  
+   _RSCDEBUGCONSOLE_BUTTONANIMATIONS ctrlCommit 0;  
+     
+   _RSCDEBUGCONSOLE_BUTTONGUI = _parentDisplay displayCtrl 13292;  
+   _RSCDEBUGCONSOLE_BUTTONGUI ctrlAddEventHandler ["ButtonClick", {[] spawn BIS_fnc_guiEditor; ctrlParent (_this select 0) closeDisplay 2}];  
+   _RSCDEBUGCONSOLE_BUTTONGUI ctrlCommit 0;  
+     
+     
+   {  
+    private _value = profileNamespace getVariable ["RscDebugConsole_watch" + str (_forEachIndex + 1), [true, "", false]];  
+    if !(_value isEqualTypeParams [true, ""]) then {_value = [true, _value, false]};   
+    _x ctrlSetText (_value select 1);  
+    if (_value select 2) then {ctrlSetFocus _x};  
+    _x setVariable ["RscDebugConsole_watchStatus", _value];  
+    _x ctrlAddEventHandler ["KeyDown", {  
+     params ["_displayOrControl", "_key", "_shift", "_ctrl", "_alt"];  
+     private _value = _displayOrControl getVariable ["RscDebugConsole_watchStatus", [true, ""]];  
+     if (_value select 1 isEqualTo "") then {_value set [0, true]};  
+     _value set [1, ctrlText _displayOrControl];  
+     _value set [2, _displayOrControl getVariable ["RscDebugConsole_watchPaused", false]];  
+     _ctrlIndex = 0;  
+     switch (ctrlIDC _displayOrControl) do {  
+      case 12285: {_ctrlIndex = 0;};  
+      case 12287: {_ctrlIndex = 1;};  
+      case 12289: {_ctrlIndex = 2;};  
+      case 12291: {_ctrlIndex = 3;};  
+     };  
+     profileNamespace setVariable ["RscDebugConsole_watch" + str (_ctrlIndex + 1), _value];  
+    }];  
+    _x ctrlCommit 0;  
+   }  
+   forEach [_parentDisplay displayCtrl 12285, _parentDisplay displayCtrl 12287, _parentDisplay displayCtrl 12289, _parentDisplay displayCtrl 12291];  
+  
+   _parentDisplay setVariable ["RscDebugConsole_fnc_watchField",   
+   {  
+    params ["_input", "_output"];   
+  
+    _this = ctrlText _input;   
+    if (_this isEqualTo "") exitWith   
+    {   
+     _input ctrlSetBackgroundColor [0,0,0,0];   
+     _output ctrlSetText "";  
+    };   
+      
+    if (_input getVariable ["RscDebugConsole_watchPaused", false]) exitWith   
+    {  
+     _input ctrlSetBackgroundColor [0.5,0.1,0,0.8];   
+     _output ctrlSetText "";  
+    };   
+      
+    _status = _input getVariable "RscDebugConsole_watchStatus";  
+    if (!(_status select 0) && {_status select 1 isEqualTo _this}) exitWith {_input ctrlSetBackgroundColor [0.5,0.1,0,0.8]};  
+      
+    _duration = diag_tickTime;   
+    _duration = compile _this call   
+    {    
+     _output ctrlSetText str ([nil] apply {private ["_input", "_output", "_status", "_duration"]; [] call _this} param [0, text ""]);   
+     diag_tickTime - _duration  
+    };  
+  
+    if (_duration < 0.003) exitWith   
+    {   
+     _input ctrlSetBackgroundColor [0,0,0,0];   
+     _status set [0, true];   
+    };   
+      
+    _input ctrlSetBackgroundColor [0.8,0.4,0,0.5];   
+    _status set [0, false];   
+      
+    if (_duration > 0.1) exitWith {_status set [1, _this]};   
+      
+    _status set [1, ""];  
+   }];  
+  
+   _parentDisplay displayAddEventHandler ["MouseMoving", {[_this select 0 displayCtrl 12285, _this select 0 displayCtrl 12286] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseHolding", {[_this select 0 displayCtrl 12285, _this select 0 displayCtrl 12286] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseMoving", {[_this select 0 displayCtrl 12287, _this select 0 displayCtrl 12288] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseHolding", {[_this select 0 displayCtrl 12287, _this select 0 displayCtrl 12288] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseMoving", {[_this select 0 displayCtrl 12289, _this select 0 displayCtrl 12290] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseHolding", {[_this select 0 displayCtrl 12289, _this select 0 displayCtrl 12290] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseMoving", {[_this select 0 displayCtrl 12291, _this select 0 displayCtrl 12293] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+   _parentDisplay displayAddEventHandler ["MouseHolding", {[_this select 0 displayCtrl 12291, _this select 0 displayCtrl 12293] call (_this select 0 getVariable "RscDebugConsole_fnc_watchField")}];  
+     
+   _parentDisplay displayAddEventHandler ["MouseButtonDown", {ctrlSetFocus (_this select 0 displayCtrl 12284)}];  
+     
+   _parentDisplay displayAddEventHandler ["KeyDown",   
+   {  
+    if (_this select 1 in [0x1C, 0x9C]) then  
+    {  
+     _parentDisplay = _this select 0;  
+     if ({_x getVariable ["RscDebugConsole_watchPaused", false]} count [    _parentDisplay displayCtrl 12285,    _parentDisplay displayCtrl 12287,    _parentDisplay displayCtrl 12289,    _parentDisplay displayCtrl 12291   ] > 0) then  
+     {  
+      ctrlSetFocus (_parentDisplay displayCtrl 12284);  
+      true  
+     };  
+    };  
+   }];  
+     
+   _parentDisplay displayAddEventHandler ["KeyDown",  
+   {  
+    params ["_parentDisplay", "_key"];  
+      
+    if (_key in [0xC9, 0xD1]) then   
+    {  
+     _expressionHistory = profileNamespace getVariable "RscDebugConsole_expressionHistory";  
+     _expressionResultHistory = parsingNamespace getVariable "BIS_RscDebugConsoleExpressionResultHistory";  
+       
+     _last = count _expressionHistory - 1;  
+       
+     _index = 0 max ((_parentDisplay getVariable "RscDebugConsole_expressionHistory_index") + ([1, -1] select (_key == 0xD1))) min _last;  
+     _parentDisplay setVariable ["RscDebugConsole_expressionHistory_index", _index];  
+       
+     _expressionCtrl = _parentDisplay displayCtrl 12284;  
+     _expressionCtrl ctrlSetText (_expressionHistory select _index);  
+       
+     if (ctrlEnabled _expressionCtrl) then  
+     {  
+        
+      _lastResult = ctrlText (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]);  
+      _expressionResultHistory set [0, _lastResult];  
+      if (_lastResult isEqualTo "") then { _expressionResultHistory set [1, [0,0,0,0]] };  
+     };  
+       
+     if (_index < _last) then  
+     {   
+      _expressionCtrl ctrlEnable false;  
+      (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlEnable false;  
+      (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText "";  
+        
+      _parentDisplay displayCtrl 13191 ctrlSetBackgroundColor [0,0,0,0];   
+      _parentDisplay getVariable "RscDebugConsole_state" params ["_stateServer", "_stateGlobal", "_stateLocal"];  
+        
+      _stateServer select 0 ctrlSetText "";  
+      _stateGlobal select 0 ctrlSetText "";  
+        
+      if (isMultiplayer) then   
+      {  
+       _stateServer select 0 ctrlenable false;  
+       _stateGlobal select 0 ctrlenable false;  
+      };  
+        
+      _stateLocal select 0 ctrlSetText format ["%1 %2", toUpper localize "str_usract_menu_select", (count _expressionHistory) - 1 - _index];  
+      ctrlSetFocus (_stateLocal select 0);  
+     }   
+     else   
+     {  
+      _expressionCtrl ctrlEnable true;  
+      (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlEnable true;  
+      (parsingNamespace getVariable ["BIS_RscDebugConsoleExpressionResultCtrl", controlNull]) ctrlSetText (_expressionResultHistory select 0);  
+      _parentDisplay displayCtrl 13191 ctrlSetBackgroundColor (_expressionResultHistory select 1);  
+        
+      {   
+       _x select 0 ctrlSetText (_x select 1);  
+       if (isMultiplayer) then { _x select 0 ctrlEnable true };  
+      }   
+      forEach (_parentDisplay getVariable "RscDebugConsole_state");  
+        
+      ctrlSetFocus _expressionCtrl;  
+     };  
+       
+     true  
+    };  
+   }];  
+     
+     
+   _RSCDEBUGCONSOLE ctrlCommit 0;  
+   saveProfileNamespace;   
+   showChat true;  
+  };  
+ call MAZ_ZEPT_fnc_debugConsole;
+  
+
+ 

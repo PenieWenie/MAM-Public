@@ -1,0 +1,361 @@
+PNI_fnc_createZombie = {
+    private _zombietypes = ["c_man_casual_1_f_afro_sick", "c_man_casual_3_f_afro_sick", "c_man_sport_2_f_afro_sick", "c_man_casual_4_f_afro_sick", "c_man_casual_5_f_afro_sick", "c_man_casual_6_f_afro_sick", "c_man_polo_1_f_afro_sick", "c_man_polo_2_f_afro_sick", "c_man_polo_3_f_afro_sick", "c_man_polo_6_f_afro_sick"];
+    private _zombie = createAgent [selectRandom _zombietypes, getPosATL player, [], 0, "NONE"];
+    
+    _zombie enableStamina false;
+    _zombie disableAI "FSM";
+    _zombie enableAI "ANIM";
+    _zombie enableAI "move";
+    _zombie enableAI "PATH";
+    _zombie setBehaviour "CARELESS";
+    _zombie setspeedMode "FULL";
+    _zombie setskill 1;
+    _zombie setskill ["spotdistance", 1];
+    _zombie setskill ["spottime", 4];
+    _zombie setskill ["courage", 1];
+    _zombie setskill ["commanding", 1];
+    _zombie allowfleeing 0;
+    _zombie forcespeed 6;
+    _zombie addrating -2000;
+    _zombie disableAI "AIminGERRor";
+    _zombie disableAI "SUPPRESSION";
+    _zombie disableAI "CHECKVISIBLE";
+    _zombie disableAI "Cover";
+    _zombie setDamage 0.4;
+    _zombie playAction "Panic";
+    _zombie addrating -99;
+    
+    _zombie setVariable ["initAttack", false, true];
+    _zombie setVariable ["Triggered", false, true];
+    _zombieArray = missionnamespace getVariable "isZombie";
+    _zombieArray pushBack _zombie;
+    missionnamespace setVariable ["isZombie", _zombieArray, true];
+    
+    _zombie addEventHandler ["firedNear", {
+        params ["_unit", "_firer", "_distance", "_weapon", "_muzzle", "_mode", "_ammo", "_gunner"];
+        
+        if (_distance <= 300) then {
+            _unit setVariable ["Triggered", true, true];
+            playSound3D ["A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss", _unit, false, getPosASL _unit, 1, 0.7];
+            _unit removeEventHandler [_thisEvent, _thisEventHandler];
+        };
+    }];
+    
+    _zombie addEventHandler['Handledamage', {
+        params["_agent", "_selection", "_damage", "_source", "_projectile", "_hitindex", "_instigator", "_hitPoint"];
+        private _unit = _zombie select 0;
+        private _hitselection = _zombie select 1;
+        _returndamage = _damage;
+        if ((_selection in ['head'])) then {
+            _returndamage = _damage;
+        } else {
+            _returndamage = _damage / 3;
+        };
+        
+        _returndamage;
+    }];
+    
+    _zombie addEventHandler ["AnimChanged", {
+        params ["_agent", "_anim"];
+        _agent playActionNow "Panic";
+        _agent setanimspeedCoef 1.5;
+    }];
+};
+
+call PNI_fnc_createZombie;
+
+systemChat "Normal Zombie spawned";
+deletevehicle this;
+
+PNI_fnc_createHeavyZombie = {
+    private _zombietypes = ["c_man_casual_1_f_afro_sick", "c_man_casual_3_f_afro_sick", "c_man_sport_2_f_afro_sick", "c_man_casual_4_f_afro_sick", "c_man_casual_5_f_afro_sick", "c_man_casual_6_f_afro_sick", "c_man_polo_1_f_afro_sick", "c_man_polo_2_f_afro_sick", "c_man_polo_3_f_afro_sick", "c_man_polo_6_f_afro_sick"];
+    private _zombie = createAgent [selectRandom _zombietypes, getPosATL player, [], 0, "NONE"];
+    
+    _zombie setVariable ["isHeavy", true, true];
+    _zombie enableStamina false;
+    _zombie disableAI "FSM";
+    _zombie enableAI "ANIM";
+    _zombie enableAI "move";
+    _zombie enableAI "PATH";
+    _zombie setBehaviour "CARELESS";
+    _zombie setspeedMode "FULL";
+    _zombie setskill 1;
+    _zombie setskill ["spotdistance", 1];
+    _zombie setskill ["spottime", 4];
+    _zombie setskill ["courage", 1];
+    _zombie setskill ["commanding", 1];
+    _zombie allowfleeing 0;
+    _zombie forcespeed 6;
+    _zombie disableAI "AIminGERRor";
+    _zombie disableAI "SUPPRESSION";
+    _zombie disableAI "CHECKVISIBLE";
+    _zombie disableAI "Cover";
+    _zombie setDamage 0.4;
+    _zombie playAction "Panic";
+    _zombie addrating -99;
+    
+    _zombie setVariable ["initHEAVYAttack", false, true];
+    _zombie setVariable ["initHeavyZombieNoises", false, true];
+    _zombie setVariable ["Triggered", false, true];
+    _zombieArray = missionnamespace getVariable "isZombie";
+    _zombieArray pushBack _zombie;
+    missionnamespace setVariable ["isZombie", _zombieArray, true];
+    
+    _zombie addEventHandler ["fired", {
+        _this spawn {
+            params ["_agent", "_weapon", "_muzzle", "_mode", "_ammo", "_magazine", "_projectile", "_gunner", "_target"];
+            private _nearMen = nearestobjects [vehicle _agent, ["Man"], 2];
+            private _target = allplayers select 0;
+            {
+                if (isplayer _x && alive _x) exitwith {
+                    _target = _x;
+                };
+            }forEach _nearmen;
+            
+            _target attachto [_projectile, [0, 0, 0]];
+            sleep 1;
+            deletevehicle _projectile;
+        };
+    }];
+    
+    _zombie addEventHandler ["firedNear", {
+        params ["_unit", "_firer", "_distance", "_weapon", "_muzzle", "_mode", "_ammo", "_gunner"];
+        
+        if (_distance <= 300) then {
+            _unit setVariable ["Triggered", true, true];
+            playSound3D ["a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss", _unit, false, getPosASL _unit, 1, 0.7];
+            _unit removeEventHandler [_thisEvent, _thisEventHandler];
+        };
+    }];
+    
+    _zombie addEventHandler['Handledamage', {
+        params["_agent", "_selection", "_damage", "_source", "_projectile", "_hitindex", "_instigator", "_hitPoint"];
+        private _unit = _zombie select 0;
+        private _hitselection = _zombie select 1;
+        _returndamage = _damage;
+        if ((_selection in ['head'])) then {
+            _returndamage = _damage / 3;
+        } else {
+            _returndamage = _damage / 6;
+        };
+        
+        _returndamage;
+    }];
+    
+    _zombie addEventHandler ["AnimChanged", {
+        params ["_agent", "_anim"];
+        _agent playActionNow "Panic";
+    }];
+};
+
+call PNI_fnc_createHEAVYZombie;
+
+systemChat "HEAVY Zombie spawned";
+deletevehicle this;
+
+[] spawn {
+    missionnamespace setVariable ["isZombie", [], true];
+    
+    zombieNoises = {
+        params ["_zombie"];
+        
+        _zombie setVariable ["initZombieNoises", true, true];
+        
+        _hitSounds = [
+            'A3\sounds_f\characters\human-sfx\P01\Low_hit_01.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Low_hit_02.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Low_hit_03.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Low_hit_04.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Low_hit_05.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Mid_hit_01.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Mid_hit_02.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Mid_hit_03.wss',
+            'A3\sounds_f\characters\human-sfx\P01\Mid_hit_04.wss',
+            'A3\sounds_f\characters\human-sfx\P01\max_hit_01.wss',
+            'A3\sounds_f\characters\human-sfx\P01\max_hit_02.wss',
+            'A3\sounds_f\characters\human-sfx\P01\max_hit_03.wss',
+            'A3\sounds_f\characters\human-sfx\P01\max_hit_04.wss',
+            'A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss'
+        ];
+        _randomSound = selectRandom _hitSounds;
+        _rNumber = random 20;
+        
+        sleep _rNumber;
+        _zombie setVariable ["initZombieNoises", false, true];
+    };
+    
+    zombieAttacklogic = {
+        params ["_zombie"];
+        private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 200];
+        private _target = allplayers select 0;
+        {
+            if (isplayer _x && alive _x) exitwith {
+                _target = _x;
+                
+                if ((_zombie distance _target) <= 2) then {
+                    _zombie setDir ([_zombie, _target] call BIS_fnc_dirto);
+                    
+                    _zombie setVariable ["initAttack", true, true];
+                    playSound3D ["a3\sounds_f\weapons\hits\body_1.wss", _zombie, false, getPosASL _zombie, 1, 0.7];
+                    _hitSounds = [
+                        'A3\sounds_f\characters\human-sfx\P01\Low_hit_01.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Low_hit_02.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Low_hit_03.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Low_hit_04.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Low_hit_05.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Mid_hit_01.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Mid_hit_02.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Mid_hit_03.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\Mid_hit_04.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\max_hit_01.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\max_hit_02.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\max_hit_03.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\max_hit_04.wss',
+                        'A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss'
+                    ];
+                    _randomSound = selectRandom _hitSounds;
+                    playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 1, 0.5];
+                    
+                    [_zombie, "AwopPercMstpSgthWnonDnon_end"] remoteExec ["switchMove"];
+                    _damage = damage _target;
+                    _target setDamage ((_damage) + 0.1);
+                    _target setBleedingRemaining 30;
+                    sleep 1.5;
+                    _zombie setVariable ["initAttack", false, true];
+                };
+            };
+        } forEach _nearMen;
+    };
+    
+    zombieHeavyNoises = {
+        params ["_zombie"];
+        
+        _zombie setVariable ["initHeavyZombieNoises", true, true];
+        
+        _hitSounds = [
+            'a3\animals_f_beta\sheep\data\sound\sheep5.wss',
+            'a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss'
+        ];
+        _randomSound = selectRandom _hitSounds;
+        _rNumber = random 20;
+        playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 4, 0.2];
+        sleep _rNumber;
+        _zombie setVariable ["initHeavyZombieNoises", false, true];
+    };
+    
+    zombieHeavyAttacklogic = {
+        params ["_zombie"];
+        private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 200];
+        private _target = allplayers select 0;
+        {
+            if (isplayer _x && alive _x) exitwith {
+                _target = _x;
+                
+                if ((_zombie distance _target) <= 2) then {
+                    _zombie setDir ([_zombie, _target] call BIS_fnc_dirto);
+                    
+                    _zombie setVariable ["initHeavyAttack", true, true];
+                    _zombie addItem "HandGrenade";
+                    sleep 0.1;
+                    _zombie forceWeaponFire ["HandGrenadeMuzzle", "HandGrenadeMuzzle"];
+                    
+                    _hitSounds = [
+                        'a3\animals_f_beta\sheep\data\sound\sheep5.wss',
+                        'a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss'
+                    ];
+                    _randomSound = selectRandom _hitSounds;
+                    playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 2, 0.2];
+                    sleep 1;
+                    [_zombie, "AwopPercMstpSgthWnonDnon_end"] remoteExec ["switchMove"];
+                    playSound3D ["a3\sounds_f\weapons\hits\body_1.wss", _zombie, false, getPosASL _zombie, 2, 0.7];
+                    shaketargetscreen = {
+                        enableCamShake true;
+                        addCamShake [5, 5, 25];
+                    };
+                    remoteExec ["shaketargetscreen", _target];
+                    _damage = damage _target;
+                    _target setDamage ((_damage) + 0.3);
+                    _target setBleedingRemaining 60;
+                    sleep 0.7;
+                    _zombie setVariable ["initHeavyAttack", false, true];
+                };
+            };
+        } forEach _nearMen;
+    };
+    
+    zombiePathlogic = {
+        params ["_zombie"];
+        {
+            params ["_zombie"];
+            _zombie reveal _x;
+            _x reveal _zombie;
+            _zombie reveal vehicle _x;
+            vehicle _x reveal _zombie;
+        } forEach allplayers;
+        
+        private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 500];
+        private _target = nearestobjects [vehicle _zombie, ["Man"], 500] select 0;
+        
+        {
+            if (isplayer _x && alive _x && (_zombie distance _x) <= 200) then {
+                _target = _x;
+                
+                if (_zombie getVariable "Triggered" == false) then {
+                    if (stance _target == "Stand" && (_target distance _zombie) >= 20) then {
+                        _target = objNull;
+                    };
+                    if (stance _target == "CROUCH" && (_target distance _zombie) >= 4) then {
+                        _target = objNull;
+                    };
+                    if (stance _target == "PRONE" && (_target distance _zombie) >= 2) then {
+                        _target = objNull;
+                    };
+                };
+            };
+        } forEach _nearMen;
+        if (!isNull _target) then {
+            _targetVeh = vehicle _target;
+            
+            _targetVehPos = getPos _targetVeh;
+            
+            _newUnitVeh = vehicle _zombie;
+            _zombie forgetTarget _target;
+            _target forgetTarget _zombie;
+            
+            _zombie moveto _targetVehPos;
+        };
+    };
+    
+    while {true} do {
+        _penieZombies = missionnamespace getVariable "isZombie";
+        private _deleteZombies = [];
+        {
+            _zombie = _x;
+            if (! alive _zombie) then {
+                _deleteZombies pushBack _zombie;
+                continue;
+            };
+            if (_zombie getVariable "initZombieNoises" == false) then {
+                [_zombie] spawn zombieNoises;
+            };
+            if (_zombie getVariable "initAttack" == false) then {
+                [_zombie] spawn zombieAttacklogic;
+            };
+            
+            if (_zombie getVariable "isHeavy" == true) then {
+                if (_zombie getVariable "initHeavyZombieNoises" == false) then {
+                    [_zombie] spawn zombieHeavyNoises;
+                };
+                if (_zombie getVariable "initHeavyAttack" == false) then {
+                    [_zombie] spawn zombieHeavyAttacklogic;
+                };
+            };
+            
+            [_zombie] call zombiePathlogic;
+        } forEach _penieZombies;
+        
+        _penieZombies = _penieZombies - _deleteZombies;
+        missionnamespace setVariable ["isZombie", _penieZombies, true];
+        sleep 0.1;
+    };
+};

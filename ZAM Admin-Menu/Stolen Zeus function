@@ -1,0 +1,98 @@
+{ 
+    [] spawn { 
+     waitUntil {(alive player)}; 
+     comment "Script Title: 
+      Create and Assign New Zeus (Curator Creator). 
+     "; 
+     comment "Credits: 
+      Created by J [WoLF]. 
+     "; 
+     comment "Description: 
+      - Creates new unique zeus module for each client it is run on. 
+      - Assigns zeus to the client it executed run on. 
+      - Automatically updates zeus interface with new objects. 
+      - Re-assigns zeus to player every respawn. 
+     "; 
+     comment "Usage: 
+      - Copy entire script. Paste in debug console. 
+      - Execute on local client to make yourself zeus. 
+      - Execute on another player's client to give them zeus interface. 
+      - Press [Y] to open and close the zeus interface. 
+     "; 
+     _init_createZeusModules = [] spawn { 
+      sKAM_addZeus_vehicleVarName = vehicleVarName player; 
+      sKAM_addZeus_superCuratorVar = ("" + sKAM_addZeus_vehicleVarName + "_superCurator"); 
+      sKAM_addZeus_CuratorLogicGroupVar = ("" + sKAM_addZeus_vehicleVarName + "_CuratorLogicGroup"); 
+      sKAM_addZeus_superCuratorPlayerAttributesVar = ("" + sKAM_addZeus_vehicleVarName + "_superCuratorPlayerAttributes"); 
+      sKAM_addZeus_initText = ("" +  
+       sKAM_addZeus_CuratorLogicGroupVar + " = createGroup sideLogic;" +  
+       sKAM_addZeus_superCuratorVar + " = " + sKAM_addZeus_CuratorLogicGroupVar + " createUnit ['ModuleCurator_F', [0, 90, 90],[],0.5,'NONE'];" +  
+       sKAM_addZeus_superCuratorVar + " setVehicleVarName '" + sKAM_addZeus_superCuratorVar + "';" +  
+       sKAM_addZeus_superCuratorVar + " setVariable ['text','" + sKAM_addZeus_superCuratorVar + "'];" +  
+       sKAM_addZeus_superCuratorVar + " setVariable ['Addons',3,true];" +  
+       sKAM_addZeus_superCuratorVar + " setVariable ['owner','objnull'];" +  
+       sKAM_addZeus_superCuratorVar + " setVariable ['vehicleinit',"" 
+        _this setVariable ['Addons',3,true]; 
+        _this setVariable ['owner','objnull']; 
+       ""];" +  
+       "unassignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       "objnull assignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " = " + sKAM_addZeus_CuratorLogicGroupVar + " createUnit ['ModuleCuratorSetAttributesPlayer_F', [2, 91, 91],[],0.5,'NONE'];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['curator','" + sKAM_addZeus_superCuratorVar + "'];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['unitpos',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['fuel',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['respawnposition',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['respawnvehicle',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['skill',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['rank',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['damage',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['exec',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['lock',true];" +  
+       sKAM_addZeus_superCuratorPlayerAttributesVar + " setVariable ['vehicleinit',"" 
+        _this setVariable ['curator','" + sKAM_addZeus_superCuratorVar + "']; 
+        _this setVariable ['unitpos',true]; 
+        _this setVariable ['fuel',true]; 
+        _this setVariable ['respawnposition',true]; 
+        _this setVariable ['respawnvehicle',true]; 
+        _this setVariable ['skill',true]; 
+        _this setVariable ['rank',true]; 
+        _this setVariable ['damage',true]; 
+        _this setVariable ['exec',true]; 
+        _this setVariable ['lock',true]; 
+       ""];" +  
+       "[" + sKAM_addZeus_superCuratorVar + ",[-2,-1,0,1]] spawn BIS_fnc_setCuratorVisionModes;" +  
+       sKAM_addZeus_superCuratorVar + " setVehicleVarName '" + sKAM_addZeus_superCuratorVar + "';" +  
+       "unassignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       "objnull assignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       "unassignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+       sKAM_addZeus_superCuratorVar + " addCuratorEditableObjects [[" + sKAM_addZeus_vehicleVarName + "],true];" +  
+       sKAM_addZeus_superCuratorVar + " addCuratorEditableObjects [allMissionObjects 'all',true];" +  
+       sKAM_addZeus_vehicleVarName + "_updateSuperCuratorEditableObjects = true;" +  
+       "[] spawn {while {((alive " + sKAM_addZeus_vehicleVarName + ") && (" + sKAM_addZeus_vehicleVarName + "_updateSuperCuratorEditableObjects" + "))} do {sleep 30;" + sKAM_addZeus_superCuratorVar + " addCuratorEditableObjects [allMissionObjects 'all',true];};};" +  
+       sKAM_addZeus_vehicleVarName + "_EH_getZeusOnRespawn2 = " + sKAM_addZeus_vehicleVarName + " addMPEventHandler ['MPRespawn', {params ['_unit', '_corpse'];" +  
+        "_unit spawn {_unit = _this;waitUntil {(alive _unit)};sleep 3;[[],{" +  
+         "unassignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         "objnull assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         "unassignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";sleep 3;" +  
+         sKAM_addZeus_vehicleVarName + " assignCurator " + sKAM_addZeus_superCuratorVar + ";" +  
+        "}] remoteExec ['spawn',2];};" +  
+       "}];" 
+      + ""); 
+       
+ 
+      _initText = sKAM_addZeus_initText; 
+      _initCode = compile _initText; 
+      zeusTestArray = ["test1",_initCode,"test2"]; 
+      publicVariableServer "zeusTestArray"; 
+      [[],{ 
+       [] spawn (zeusTestArray select 1); 
+      }] remoteExec ['spawn',2]; 
+     }; 
+    }; 
+   }

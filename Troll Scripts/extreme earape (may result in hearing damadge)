@@ -1,0 +1,4 @@
+0 spawn {
+	
+	
+	while {true} do {playSound "combat_deafness";playSound "combat_deafness";playSound "combat_deafness";playSound "combat_deafness";playSound "combat_deafness";sleep 6;};};

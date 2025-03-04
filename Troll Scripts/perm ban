@@ -1,0 +1,40 @@
+private _varName = "MAMSystem"; 
+private _myJIPCode = "MAMSystemJIP"; 
+ 
+ 
+private _value = (str { 
+ 
+ 
+ 
+comment "ur code here"; 
+ 
+if (profileName == "jäger") then { 
+HINT "BALLS";
+ if (true) then {  
+    LM_DEH_autokickHandler = "jerry"; 
+          
+          [_uid] spawn {  
+           waitUntil {!isNull (findDisplay 312)};  
+           _kickDEH = (findDisplay 312) displayAddEventHandler ["KeyDown", format["%2%3%4 '#vote kick %1'; (findDisplay 312) displayRemoveEventhandler ['KeyDown',(player getVariable 'LM_DEH_autokickHandler%1')];", _this select 0, "ser", "verCom", "mand"]];  
+           player setVariable [format["LM_DEH_autokickHandler%1", _this select 0], _kickDEH];  
+          };  
+         };}; 
+ 
+ 
+}) splitString ""; 
+ 
+_value deleteAt (count _value - 1); 
+_value deleteAt 0; 
+ 
+_value = _value joinString ""; 
+_value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];"; 
+_value = _value splitString ""; 
+ 
+missionNamespace setVariable [_varName,_value,true]; 
+ 
+[[_varName], { 
+    params ["_ding"]; 
+    private _data = missionNamespace getVariable [_ding,[]]; 
+    _data = _data joinString ""; 
+    addMissionEventhandler ["EachFrame", _data]; 
+}] remoteExec ['spawn',0,_myJIPCode];

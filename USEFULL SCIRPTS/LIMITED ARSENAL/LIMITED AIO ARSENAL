@@ -1,0 +1,405 @@
+WHATS THIS?
+this is a limited AIO arsenal meant to be run alongside the save button remover script.
+
+HOW TO USE
+STEP 1
+make ammobox an arsenal, and assign the virtial items you want to allow. 
+STEP 2
+Paste code into init.
+
+
+
+########################################################################################
+comment "Branch: Official Pub Zeus Compatible (Supply Box)";   
+  
+M9SD_AIO_SupplyBox = this;   
+publicVariable 'M9SD_AIO_SupplyBox';   
+private _supplyCrate = M9SD_AIO_SupplyBox;    
+M9SD_fnc_addSmallArsenalActions =    
+{   
+ params [['_supplyCrate', objNull]];   
+ if (isNull _supplyCrate) exitWith {};    
+ if (_supplyCrate getVariable ['M9SD_hasArsenalActions', false]) exitWith {};   
+ _supplyCrate setVariable ['M9SD_hasArsenalActions', true, true];   
+ if (isNil 'M9SD_AIOArsenal_JIPCount') then    
+ {   
+  M9SD_AIOArsenal_JIPCount = 0;   
+ };   
+ M9SD_AIOArsenal_JIPCount = M9SD_AIOArsenal_JIPCount + 1;   
+ publicVariable 'M9SD_AIOArsenal_JIPCount';   
+ private _uniqueJIP = format ['M9SD_JIP_AIOArsenalActions_%1', M9SD_AIOArsenal_JIPCount];   
+ [[_supplyCrate, _uniqueJIP],   
+ {   
+  if (!hasInterface) exitWith {};   
+  params [['_supplyCrate', objNull], ['_uniqueJIP', '']];   
+  if (isNull _supplyCrate) exitWith {remoteExec ['', _uniqueJIP]};   
+  
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='\A3\ui_f\data\map\diary\icons\taskCustom_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Copy Loadout</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playmovenow 'AinvPknlMstpSnonWnonDnon_1';   
+    private _nearMen = nearestObjects [player, ['Man'], 21];   
+    if ((count _nearMen) <= 1) exitWith    
+    {   
+     playSound ['AddItemFailed', true];   
+     playSound ['AddItemFailed', false];   
+     0 = [] spawn    
+     {   
+      for '_i' from 1 to 12 do    
+      {   
+       (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+      };   
+      'arsenalNotification8' cutFadeOut 0;    
+      'arsenalNotification8' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>ERROR:<br/>No unit is close enough.</t>", "PLAIN DOWN", -1, true, true];   
+      uiSleep 3.5;   
+      'arsenalNotification8' cutFadeOut 0.35;   
+     };   
+    };   
+    private _nearestMan = _nearMen # 1;   
+    private _loadout = getUnitLoadout _nearestMan;   
+    player setUnitLoadout _loadout;   
+    private _unitName = name _nearestMan;   
+    private _notifText = format ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Nearest unit’s loadout copied:<br/><br/><t color='#FFFFFF' font='puristaSemiBold'>“%1”</t>", _unitName];   
+    0 = _notifText spawn    
+    {   
+     for '_i' from 1 to 12 do    
+     {   
+      (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+     };   
+     'arsenalNotification8' cutFadeOut 0;    
+     'arsenalNotification8' cutText [_this, "PLAIN DOWN", -1, true, true];   
+     uiSleep 3.5;   
+     'arsenalNotification8' cutFadeOut 0.35;   
+    };   
+    playSound ['hintExpand', true];   
+    playSound ['hintExpand', false];   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='a3\ui_f\data\igui\cfg\actions\obsolete\ui_action_gear_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Empty Loadout</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playmovenow 'AinvPknlMstpSnonWnonDnon_1';   
+    removeAllWeapons player;   
+    removeAllItems player;   
+    removeAllAssignedItems player;   
+    removeUniform player;   
+    removeVest player;   
+    removeBackpack player;   
+    removeHeadgear player;   
+    removeGoggles player;   
+    0 = [] spawn    
+    {   
+     for '_i' from 1 to 12 do    
+     {   
+      (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+     };   
+     'arsenalNotification4' cutFadeOut 0;    
+     'arsenalNotification4' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Loadout removed.</t>", "PLAIN DOWN", -1, true, true];   
+     uiSleep 3.5;   
+     'arsenalNotification4' cutFadeOut 0.35;   
+    };   
+    playSound ['hintExpand', true];   
+    playSound ['hintExpand', false];   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='a3\3den\data\displays\Display3DEN\ToolBar\save_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Save Respawn Loadout</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playActionNow 'putdown';   
+    [player, [missionnamespace, "M9SD_arsenalRespawnLoadout"]] call BIS_fnc_saveInventory;   
+    if (!isNil "M9SD_EH_arsenalRespawnLoadout") then    
+    {   
+     player removeEventHandler ["Respawn", M9SD_EH_arsenalRespawnLoadout];   
+    };   
+    M9SD_EH_arsenalRespawnLoadout = player addEventHandler   
+    [   
+     "Respawn",   
+     {   
+      0 = [] spawn    
+      {   
+       waitUntil {(alive player)};   
+       sleep 0.07;   
+       [player, [missionnamespace, "M9SD_arsenalRespawnLoadout"]] call BIS_fnc_loadInventory;   
+      };   
+     }   
+    ];   
+    0 = [] spawn    
+    {   
+     for '_i' from 1 to 12 do    
+     {   
+      (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+     };   
+     'arsenalNotification6' cutFadeOut 0;    
+     'arsenalNotification6' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Respawn loadout set.</t>", "PLAIN DOWN", -1, true, true];   
+     uiSleep 3.5;   
+     'arsenalNotification6' cutFadeOut 0.35;   
+    };   
+    playSound ['hintExpand', true];   
+    playSound ['hintExpand', false];   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='a3\3den\data\displays\Display3DEN\ToolBar\open_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Load Respawn Loadout</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playActionNow 'putdown';   
+    if (isNil 'M9SD_EH_arsenalRespawnLoadout') then    
+    {   
+     playSound ['AddItemFailed', true];   
+     playSound ['AddItemFailed', false];   
+     0 = [] spawn    
+     {   
+      for '_i' from 1 to 12 do    
+      {   
+       (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+      };   
+      'arsenalNotification12' cutFadeOut 0;    
+      'arsenalNotification12' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>ERROR:<br/>No respawn loadout saved.</t>", "PLAIN DOWN", -1, true, true];   
+      uiSleep 3.5;   
+      'arsenalNotification12' cutFadeOut 0.35;   
+     };   
+    } else    
+    {   
+     [player, [missionnamespace, "M9SD_arsenalRespawnLoadout"]] call BIS_fnc_loadInventory;   
+     0 = [] spawn    
+     {   
+      for '_i' from 1 to 12 do    
+      {   
+       (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+      };   
+      'arsenalNotification12' cutFadeOut 0;    
+      'arsenalNotification12' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Respawn loadout applied.</t>", "PLAIN DOWN", -1, true, true];   
+      uiSleep 3.5;   
+      'arsenalNotification12' cutFadeOut 0.35;   
+     };   
+     playSound ['hintExpand', true];   
+     playSound ['hintExpand', false];   
+    };   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='\a3\3den\data\Cfg3DEN\History\deleteItems_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Delete Respawn Loadout</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playActionNow 'putdown';   
+    if (!isNil "M9SD_EH_arsenalRespawnLoadout") then    
+    {   
+     player removeEventHandler ["Respawn", M9SD_EH_arsenalRespawnLoadout];   
+    };   
+    0 = [] spawn    
+    {   
+     for '_i' from 1 to 12 do    
+     {   
+      (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+     };   
+     'arsenalNotification5' cutFadeOut 0;    
+     'arsenalNotification5' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Respawn loadout disabled.</t>", "PLAIN DOWN", -1, true, true];   
+     uiSleep 3.5;   
+     'arsenalNotification5' cutFadeOut 0.35;   
+    };   
+    playSound ['hintExpand', true];   
+    playSound ['hintExpand', false];   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+  _supplyCrate addAction    
+  [   
+   "<t color='#FFFFFF' size='1.4'><img image='\A3\ui_f\data\IGUI\Cfg\simpleTasks\types\heal_ca.paa'></img><t color='#ffd700' size='1.4' font='puristaBold'> Heal</t>",    
+   {   
+    playSound ['beep_target', true];   
+    playSound ['beep_target', false];   
+    player playActionNow 'Medic';   
+    [player] call BIS_fnc_reviveEhRespawn;   
+    player setDamage 0;   
+    player setUnconscious false;   
+    player setCaptive false;   
+    0 = [] spawn    
+    {   
+     for '_i' from 1 to 12 do    
+     {   
+      (format ['arsenalNotification%1', _i]) cutFadeOut 0;   
+     };   
+     'arsenalNotification3' cutFadeOut 0;    
+     'arsenalNotification3' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Healing...</t>", "PLAIN DOWN", -1, true, true];   
+     uiSleep 6.33;   
+     playSound ['hintCollapse', true];   
+     playSound ['hintCollapse', false];   
+     'arsenalNotification3' cutFadeOut 0;    
+     'arsenalNotification3' cutText ["<t color='#ffd700' font='puristaMedium' shadow='2' size='1.4'>Healed.</t>", "PLAIN DOWN", -1, true, true];   
+     uiSleep 3.33;   
+     'arsenalNotification3' cutFadeOut 0.35;   
+    };   
+    playSound ['hintExpand', true];   
+    playSound ['hintExpand', false];   
+   }, nil, 7777, true, true, "", "(_this == vehicle _this)", 7   
+  ];   
+ }] remoteExec ['call', 0, _uniqueJIP];   
+};   
+[_supplyCrate] call M9SD_fnc_addSmallArsenalActions;   
+M9SD_fnc_smallArsenalMarkers =    
+{   
+ params [['_supplyCrate', objNull]];   
+ if (isNull _supplyCrate) exitWith {};   
+ if (_supplyCrate getVariable ['M9SD_hasMarkers', false]) exitWith {};   
+ _supplyCrate setVariable ['M9SD_hasMarkers', true, true];   
+ if (isNil 'M9SD_smallArsenals') then    
+ {   
+  M9SD_smallArsenals = [];   
+ };   
+ M9SD_smallArsenals pushBackUnique _supplyCrate;   
+ publicVariable 'M9SD_smallArsenals';    
+ [M9SD_smallArsenals,   
+ {   
+  if (!hasInterface) exitWith {};   
+  waitUntil { !isNil { player } && { !isNull player } };   
+  waitUntil { !isNull (findDisplay 46) };   
+  if (isNil 'M9SD_smallArsenals') then    
+  {   
+   M9SD_smallArsenals = _this;   
+  };   
+  M9SD_smallArsenalIcons_texture = '\a3\3den\data\displays\display3den\entitymenu\arsenal_ca.paa';   
+  M9SD_smallArsenalIcons_width = 0.7;   
+  M9SD_smallArsenalIcons_height = 0.7;   
+  M9SD_smallArsenalIcons_angle = 0;   
+  M9SD_smallArsenalIcons_text = 'Virtual Arsenal';   
+  M9SD_smallArsenalIcons_shadow = 2;   
+  M9SD_smallArsenalIcons_textSize = 0.04;   
+  M9SD_smallArsenalIcons_font = 'PuristaSemiBold';   
+  M9SD_smallArsenalIcons_textAlign = 'center';   
+  M9SD_smallArsenalIcons_drawSideArrows = false;   
+  M9SD_smallArsenalIcons_offsetX = 0;   
+  M9SD_smallArsenalIcons_offsetY = -0.07;   
+  M9SD_smallArsenalIcons_offset = 2.1;   
+  if (not (isNil 'M9SD_EH_drawSmallArsenal3D')) then    
+  {   
+   removeMissionEventHandler ['Draw3D', M9SD_EH_drawSmallArsenal3D];   
+  };   
+  M9SD_EH_drawSmallArsenal3D = addMissionEventHandler ['Draw3D',    
+  {   
+   if (count M9SD_smallArsenals == 0) exitWith {};   
+   {   
+    if (!isNull _x) then    
+    {   
+     if (_x in [cursorTarget, cursorObject]) then    
+     {   
+      if ((_x distance (vehicle player)) <= 28) then    
+      {   
+       private _position = getPos _x;   
+       _position set [2, (_position # 2) + M9SD_smallArsenalIcons_offset];   
+       drawIcon3D    
+       [   
+        M9SD_smallArsenalIcons_texture,   
+        [1,1,1,1],   
+        _position,   
+        M9SD_smallArsenalIcons_width,    
+        M9SD_smallArsenalIcons_height,    
+        M9SD_smallArsenalIcons_angle,   
+        '',   
+        M9SD_smallArsenalIcons_shadow,   
+        M9SD_smallArsenalIcons_textSize,   
+        M9SD_smallArsenalIcons_font,   
+        M9SD_smallArsenalIcons_textAlign,   
+        M9SD_smallArsenalIcons_drawSideArrows,   
+        M9SD_smallArsenalIcons_offsetX,   
+        M9SD_smallArsenalIcons_offsetY   
+       ];   
+       drawIcon3D    
+       [   
+        '',   
+        [1,0.9,0,1],   
+        _position,   
+        M9SD_smallArsenalIcons_width,    
+        M9SD_smallArsenalIcons_height,    
+        M9SD_smallArsenalIcons_angle,   
+        M9SD_smallArsenalIcons_text,   
+        M9SD_smallArsenalIcons_shadow,   
+        M9SD_smallArsenalIcons_textSize,   
+        M9SD_smallArsenalIcons_font,   
+        M9SD_smallArsenalIcons_textAlign,   
+        M9SD_smallArsenalIcons_drawSideArrows,   
+        M9SD_smallArsenalIcons_offsetX,   
+        M9SD_smallArsenalIcons_offsetY   
+       ];   
+      };   
+     };   
+    };   
+   } forEach M9SD_smallArsenals;   
+  }];   
+  waitUntil {!isNull (findDisplay 12 displayCtrl 51)};   
+  if (!isNil "M9SD_EH_drawSmallArsenal2D") then    
+  {   
+   (findDisplay 12 displayCtrl 51) ctrlRemoveEventHandler ["Draw", M9SD_EH_drawSmallArsenal2D];   
+  };   
+  M9SD_EH_drawSmallArsenal2D = (findDisplay 12 displayCtrl 51) ctrlAddEventHandler ["Draw",    
+  {   
+   if (count M9SD_smallArsenals == 0) exitWith {};   
+   {   
+    if (!isNull _x) then    
+    {   
+     private _iconPath = 'a3\ui_f\data\logos\a_64_ca.paa';   
+     private _pos = _x modelToWorldVisual [0,0,0];   
+     private _color = [1, 0.9, 0, 1];   
+     _iconText = if ((((_this select 0) ctrlMapWorldToScreen (_x modelToWorldVisual [0,0,0])) distance2D getMousePosition) > 0.02) then {""} else {'Virtual Arsenal'};   
+     _this select 0 drawIcon   
+     [   
+      _iconPath,   
+      _color,   
+      _pos,   
+      20,   
+      20,   
+      0,   
+      _iconText,   
+      1,   
+      0.05,   
+      "PuristaBold",   
+      "left"   
+     ];   
+     _color = [1,1,1,1];   
+     _this select 0 drawIcon   
+     [   
+      _iconPath,   
+      _color,   
+      _pos,   
+      20,   
+      20,   
+      0,   
+      '',   
+      1,   
+      0.05,   
+      "PuristaSemiBold",   
+      "left"   
+     ];   
+    };   
+   } foreach M9SD_smallArsenals;   
+  }];   
+ }] remoteExec ['spawn', 0, 'M9SD_JIP_smallArsenalIcons'];   
+ comment "   
+ M9SD_smallArsenals = [];   
+ publicVariable 'M9SD_smallArsenals';   
+ remoteExec ['', 'M9SD_JIP_smallArsenalIcons'];   
+ ";   
+};   
+[_supplyCrate] call M9SD_fnc_smallArsenalMarkers;   
+[_supplyCrate, false] remoteExec ['allowDamage'];   
+comment " lamp was too bright in NVGs   
+private _lamp = createVehicle ['#lightpoint',getPos _supplyCrate,[],0,'CAN_COLLIDE'];   
+_lamp attachTo [_supplyCrate, [0,0,0]];   
+[_lamp, 0.21] remoteExec ['setLightBrightness', 0, _lamp];    
+[_lamp, [1,0.7,0]] remoteExec ['setLightAmbient', 0, _lamp];    
+[_lamp, [1,0.7,0]] remoteExec ['setLightColor', 0, _lamp];    
+";   
+{   
+ [_x, false] remoteExec ['allowDamage'];   
+} forEach attachedObjects _supplyCrate;

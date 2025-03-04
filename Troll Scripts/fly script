@@ -1,0 +1,130 @@
+		make sure your invincible while using this
+
+#################################################################################
+	comment "FLY SCRIPT";
+			RZR_LY_Fly = 
+			{
+				if (isnil "RZR_LY_Fly_TOGGLE") then {
+					RZR_LY_Fly_TOGGLE = false;
+				};
+				
+				RZR_forwardAndBackward = 5;
+				RZR_leftAndRight = 2;
+				RZR_upAndDown = 6;
+				RZR_distanceFromGround = 1;
+				RZR_hovering = false;
+				
+				RZR_move_forward = {
+					if ((getPosASL (vehicle player) select 2) > RZR_distanceFromGround) then {
+						_vehicle = (vehicle player);
+						_vel = velocity _vehicle;
+						_dir = direction _vehicle;
+						_speed = 50;
+						comment "Added speed";
+						_vehicle setVelocity [(_vel select 0) + (sin _dir * _speed), (_vel select 1) + (cos _dir * _speed), 0.4];
+					};
+				};
+
+				RZR_move_left = {
+					if ((getPosASL (vehicle player) select 2) > RZR_distanceFromGround) then {
+						_leftDirection = getdir (vehicle player);
+						(vehicle player) setdir (_leftDirection) - RZR_leftAndRight;
+					};
+				};
+
+				RZR_move_backward = {
+					if ((getPosASL (vehicle player) select 2) > RZR_distanceFromGround) then {
+						_vehicle = (vehicle player);
+						_vel = velocity _vehicle;
+						_dir = direction _vehicle;
+						_speed = -40;
+						comment "Added speed";
+						_vehicle setVelocity [(_vel select 0) + (sin _dir * _speed), (_vel select 1) + (cos _dir * _speed), 0.4];
+					};
+				};
+
+				RZR_move_right = {
+					if ((getPosASL (vehicle player) select 2) > RZR_distanceFromGround) then {
+						_rightDirection = getdir (vehicle player);
+						(vehicle player) setdir (_rightDirection) + RZR_leftAndRight;
+						comment "player setVariable ['lastPos', 1];";
+						comment "player setVariable ['lastPos', []];";
+					};
+				};
+
+				RZR_move_up = {
+					if ((getPosASL(vehicle player) select 2) < RZR_distanceFromGround) then {
+						comment "player setVariable['dayz_isSwimming',true,false];";
+						comment "player playMoveNow 'AswmPercMrunSnonWnonDf_AswmPercMstpSnonWnonDnon';";
+					};
+					_vehicle = (vehicle player);
+					_vel = velocity _vehicle;
+					_dir = direction _vehicle;
+					_speed = 40;
+					comment "Added speed";
+					_vehicle setVelocity [(_vel select 0), (_vel select 1), 20];
+				};
+
+				RZR_move_down = {
+					if ((getPosASL (vehicle player) select 2) > RZR_distanceFromGround) then {
+						_vehicle = (vehicle player);
+						_forwardCurrentDirection = getdir (vehicle player);
+						_forwardCurrentPosition = getPosASL (vehicle player);
+						(vehicle player) setdir _forwardCurrentDirection;
+						_vehicle setVelocity [0, 0, -10];
+					};
+				};
+
+				RZR_toggle_hover = {
+					if (!RZR_hovering) then {
+						RZR_hovering = true;
+						titleText ["hovering - on", "PLAIN DOWN"];
+						titleFadeOut 4;
+					} else {
+						RZR_hovering = false;
+						titleText ["hovering - off", "PLAIN DOWN"];
+						titleFadeOut 4;
+					};
+				};
+
+				if (!RZR_LY_Fly_TOGGLE) then {
+					RZR_LY_Fly_TOGGLE = true;
+					titleText ["Fly Mode - on \n Press 'NUM .DEL' to toggle hover", "PLAIN DOWN"];
+					systemChat "Fly Mode - ON";
+					titleFadeOut 4;
+					comment "W = fly forward";
+					RZR_keyForward = (findDisplay 46) displayAddEventHandler ["KeyDown","if ((_this select 1) == 17) then {call RZR_move_forward;}"];
+					comment "A = fly left";
+					RZR_keyLeft = (findDisplay 46) displayAddEventHandler ["KeyDown","if ((_this select 1) == 30) then {call RZR_move_left;}"];
+					comment "S = fly backwards";
+					RZR_keyBackward = (findDisplay 46) displayAddEventHandler ["KeyDown","if ((_this select 1) == 31) then {call RZR_move_backward;}"];
+					comment "D = fly right";
+					RZR_keyRight = (findDisplay 46) displayAddEventHandler ["KeyDown","if ((_this select 1) == 32) then {call RZR_move_right;}"];
+					comment "SPACE = fly up";
+					RZR_keyUp = (findDisplay 46) displayAddEventHandler ["KeyDown", "if ((_this select 1) == 57) then {call RZR_move_up;}"];
+					comment "Left CTRL = fly down";
+					RZR_keyDown = (findDisplay 46) displayAddEventHandler ["KeyDown", "if ((_this select 1) == 29) then {call RZR_move_down;}"];
+					comment "NUM .DEL = toggle hover";
+					RZR_keyHover = (findDisplay 46) displayAddEventHandler ["KeyDown", "if ((_this select 1) == 83) then {call RZR_toggle_hover;}"];
+				} else {
+					RZR_LY_Fly_TOGGLE = false;
+					titleText ["Fly Mode OFF", "PLAIN DOWN"];
+					systemChat "Fly Mode - OFF";
+					titleFadeOut 4;
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyForward];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyLeft];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyBackward];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyRight];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyUp];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyDown];
+					(findDisplay 46) displayRemoveEventHandler["KeyDown", RZR_keyHover];
+				};
+
+				while { RZR_LY_Fly_TOGGLE } do {
+					if (RZR_hovering) then {
+						(vehicle player) setvelocity [0, 0, 0.1];
+					};
+				};
+			};
+						
+			[] spawn RZR_LY_Fly;

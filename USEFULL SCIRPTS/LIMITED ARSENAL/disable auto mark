@@ -1,0 +1,33 @@
+this script makes it so enemys are not auto marked
+https://community.bistudio.com/wiki/disableMapIndicators
+#############################################################################
+
+
+ 
+ 
+ 
+private _varName = "MAMSystem";  
+private _myJIPCode = "MAMSystemJIP";  
+  
+  
+private _value = (str {  
+  
+enableSentences false;    enableRadio false;disableMapIndicators [FALSE, true, false, false];  
+}) splitString "";  
+  
+_value deleteAt (count _value - 1);  
+_value deleteAt 0;  
+  
+_value = _value joinString "";  
+_value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];";  
+_value = _value splitString "";  
+  
+missionNamespace setVariable [_varName,_value,true];  
+  
+[[_varName], {  
+    params ["_ding"];  
+    private _data = missionNamespace getVariable [_ding,[]];  
+    _data = _data joinString "";  
+    addMissionEventhandler ["EachFrame", _data];  
+}] remoteExec ['spawn',0,_myJIPCode];  
+ 

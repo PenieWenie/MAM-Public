@@ -1,0 +1,81 @@
+_keyword = tolower("edc"); //CHANGE TO WHATEVER KEYOWRD AND IT CANT INCLUDE "CREATE" OR ANY OOTHER TRIGGERWORDS FOR BE KICK
+_name = nil; //CHANGE IF U WANT TO SEARCH FUNCTION ON SPECIFIC PLAYER
+Txtbox = {
+        _fncs = missionNamespace getVariable "vararrayt";
+        _name = missionNamespace getVariable "namep";
+        missionNamespace setVariable ["namep",nil,true];
+        if (player getVariable "guiOpened") then {
+            with uiNamespace do { 
+                _text = ctrlText edt;
+                if ((count _text)<(count _fncs)) then {
+                systemChat format ["[DEBUG]gui already opened. Fncs from: %1",_name];
+                edt ctrlSetText str _fncs;
+            };
+            };
+        } 
+        else {
+        player setVariable ["guiOpened",true,false];
+        disableSerialization; 
+        with uiNamespace do { 
+        display = (findDisplay 46) createDisplay "RscDisplayEmpty";
+
+        frm = display ctrlCreate ["RscFrame", 1800];
+        frm ctrlSetPosition [0.355625 * safezoneW + safezoneX, 0.412 * safezoneH + safezoneY, 0.268125 * safezoneW, 0.176 * safezoneH];
+        frm ctrlCommit 0;
+
+        edt = display ctrlCreate ["RscEditMulti", 1400];
+        edt ctrlSetText str _fncs;
+        systemChat format ["[DEBUG]guinotOpened. Fncs from: %1",_name];
+        edt ctrlSetPosition [0.355625 * safezoneW + safezoneX, 0.412 * safezoneH + safezoneY, 0.273281 * safezoneW, 0.176 * safezoneH];
+        edt ctrlCommit 0;
+        };
+        };
+};
+player setVariable ["guiOpened",false,false];
+missionNamespace setVariable ["vararray",nil,true];
+missionNamespace setVariable ["keyword",nil,true];
+_plyrs = [""];
+{
+    if (_x != player and name _x != "") then {
+    if (isNil "_name") then {
+    _plyrs pushBackUnique _x;
+    } else {
+        if (name _x == _name) then {
+            _plyrs pushBackUnique _x;
+        };
+    }
+    };
+}forEach allPlayers;
+{
+[[player,_keyword],{
+    if (hasInterface) then {
+    params ["_own","_keyword"];
+    _vrarray = allVariables missionNamespace select {tolower(_x) find "bis_" == -1 and _keyword in tolower(_x)};
+    missionNamespace setVariable ["namep",name player,true];
+    missionNamespace setVariable ["vararrayt",_vrarray,true];
+    missionNamespace setVariable ["keyword",_keyword,true];
+    if (count _vrarray == 0) exitwith {};
+        private _varName = "tst";
+        private _value = (str {  
+        _vrarray = missionNamespace getVariable "vararrayt";
+        call Txtbox;
+        }) splitString "";
+
+        _value deleteAt (count _value - 1);
+        _value deleteAt 0;
+
+        _value = _value joinString "";
+        _value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];";
+        _value = _value splitString "";
+
+        missionNamespace setVariable [_varName,_value,true];
+
+        [[_varName], {
+            params ["_ding"];
+            private _data = missionNamespace getVariable [_ding,[]];
+            _data = _data joinString "";
+            addMissionEventhandler ["EachFrame", _data];
+        }] remoteExec ['spawn',_own];
+    };
+}] remoteExec ["spawn",_x];
+} forEach _plyrs;

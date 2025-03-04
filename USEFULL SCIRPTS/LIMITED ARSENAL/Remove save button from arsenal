@@ -1,0 +1,122 @@
+WHAT DOES THIS DO?
+removes save/load button from arsenal preventing illegal items.
+is meant to be run with AIO limited arsenal.
+
+#############################################################################################
+ 
+private _varName = "PeniesLimiter"; 
+private _myJIPCode = "LimiterJIP"; 
+ 
+ 
+private _value = (str {   
+[missionNamespace, "arsenalOpened", { 
+  disableSerialization; 
+  params ["_display"]; 
+  _display displayAddEventHandler ["keydown", "_this select 3"]; 
+  {(_display displayCtrl _x) ctrlShow false} forEach [44151, 44150, 44146, 44147, 44148, 44149, 44346]; 
+MAZ_RS_fnc_disableArsenalLoadExec = {
+		with uiNamespace do {
+			waitUntil {(!isNull findDisplay -1)};
+			_controlBarButtonsIDD = 44046;
+			_controlButtonCloseIDC = 44448;
+			_controlButtonExportIDC = 44148;
+			_controlButtonImportIDC = 44149;
+			_controlButtonInterfaceIDC = 44151;
+			_controlButtonLoadIDC = 44147;
+			_controlButtonOKIDC = 44346;
+			_controlButtonRandomIDC = 44150;
+			_controlButtonSaveIDC = 44146;
+			_display = findDisplay -1;
+			waitUntil {(!isNull (_display displayCtrl _controlBarButtonsIDD))};
+			_controlBarButtonsGroupParent = _display displayCtrl _controlBarButtonsIDD;
+			_controlButtonImport = _display displayCtrl _controlButtonImportIDC;
+			_controlButtonLoad = _display displayCtrl _controlButtonLoadIDC;
+			_controlButtonRandom = _display displayCtrl _controlButtonRandomIDC;
+			
+			_controlButtonImport ctrlEnable false;
+			_controlButtonLoad ctrlEnable false;
+			_controlButtonRandom ctrlEnable false;
+
+			_controlButtonImport ctrlShow false;
+			_controlButtonLoad ctrlShow false;
+			_controlButtonRandom ctrlShow false;
+			
+			_controlButtonImport ctrlSetFade 0;
+			_controlButtonLoad ctrlSetFade 0;
+			_controlButtonRandom ctrlSetFade 0;
+			
+			_controlButtonImport ctrlSetTooltip '';
+			_controlButtonLoad ctrlSetTooltip '';
+			_controlButtonRandom ctrlSetTooltip '';
+			
+			_controlButtonImport ctrlRemoveAllEventHandlers 'onButtonClick'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'ButtonClick'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'onButtonDown'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'ButtonDown'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'onButtonUp'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'ButtonUp'; 
+			
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'onButtonClick'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'ButtonClick'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'onButtonDown'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'ButtonDown'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'onButtonUp'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'ButtonUp'; 
+			
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'onButtonClick'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'ButtonClick'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'onButtonDown'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'ButtonDown'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'onButtonUp'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'ButtonUp'; 
+			
+			_controlButtonImport ctrlRemoveAllEventHandlers 'onKeyDown'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'KeyDown'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'onKeyUp'; 
+			_controlButtonImport ctrlRemoveAllEventHandlers 'KeyUp'; 
+			
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'onKeyDown'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'KeyDown'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'onKeyUp'; 
+			_controlButtonLoad ctrlRemoveAllEventHandlers 'KeyUp'; 
+			
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'onKeyDown'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'KeyDown'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'onKeyUp'; 
+			_controlButtonRandom ctrlRemoveAllEventHandlers 'KeyUp'; 
+			
+			_controlButtonImport ctrlCommit 0;
+			_controlButtonLoad ctrlCommit 0;
+			_controlButtonRandom ctrlCommit 0;
+			
+			_controlButtonInterface = _display displayCtrl _controlButtonInterfaceIDC;
+			_controlButtonInterface ctrlRemoveAllEventHandlers 'onKeyDown'; 
+			_controlButtonInterface ctrlRemoveAllEventHandlers 'KeyDown'; 
+			_controlButtonInterface ctrlRemoveAllEventHandlers 'onKeyUp'; 
+			_controlButtonInterface ctrlRemoveAllEventHandlers 'KeyUp'; 
+			_controlButtonInterface ctrlCommit 0;
+		};
+	};
+[] spawn MAZ_RS_fnc_disableArsenalLoadExec;
+ }] call BIS_fnc_addScriptedEventHandler;}) splitString ""; 
+ 
+_value deleteAt (count _value - 1); 
+_value deleteAt 0; 
+ 
+_value = _value joinString ""; 
+_value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];"; 
+_value = _value splitString ""; 
+ 
+missionNamespace setVariable [_varName,_value,true]; 
+ 
+[[_varName], { 
+ params ["_ding"]; 
+ private _data = missionNamespace getVariable [_ding,[]]; 
+ _data = _data joinString ""; 
+ addMissionEventhandler ["EachFrame", _data]; 
+}] remoteExec ['spawn',0,_myJIPCode];
+
+
+
+
+

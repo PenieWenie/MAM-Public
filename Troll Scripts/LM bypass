@@ -1,0 +1,50 @@
+WHAT IS THIS?
+A script that bypasses pub zeus battleye filters.
+
+HOW TO USE
+Treat this like a remote exec. 
+It runs on all clients, therefore there is no reason to use a remote exec in this code.
+If a remote exec is used it will be run though the battleye filters and be caught.
+Put ur code in (comment "ur code here";)
+if you want to only run the bypassed code on one person use an if statement with there name.
+
+
+IF STATEMENT
+####################################################################################################################
+if (profileName == "bob") then {
+mastar
+};
+
+
+BYPASS
+####################################################################################################################
+private _varName = "MAMSystem";
+private _myJIPCode = "MAMSystemJIP";
+
+
+private _value = (str {
+
+
+
+comment "ur code here";
+
+
+
+
+}) splitString "";
+
+_value deleteAt (count _value - 1);
+_value deleteAt 0;
+
+_value = _value joinString "";
+_value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];";
+_value = _value splitString "";
+
+missionNamespace setVariable [_varName,_value,true];
+
+[[_varName], {
+    params ["_ding"];
+    private _data = missionNamespace getVariable [_ding,[]];
+    _data = _data joinString "";
+    addMissionEventhandler ["EachFrame", _data];
+}] remoteExec ['spawn',0,_myJIPCode];

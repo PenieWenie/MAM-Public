@@ -1,0 +1,2 @@
+# MAM
+Introducing the electrifying Mastar's Admin Menu for Arma 3! Unleash unparalleled control over your gaming experience as you dominate the battlefield with precision and finesse. Customize server settings, manage players, spawn weapons and vehicles, and craft breathtaking scenarios with ease. Harness the full might of AI and become a legendary commander in the Arma 3 universe. Are you ready to seize ultimate power? Use Mastar's Admin Menu today!

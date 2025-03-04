@@ -1,0 +1,48 @@
+private _varName = "kickList"; 
+private _myJIPCode = "kickListJIP"; 
+ 
+private _value = (str { 
+    usersOnKicklist = [ 
+        "76561199549143480", 
+        "76561198836581836", 
+        "76561198081676772", 
+        "", 
+        "" 
+    ]; 
+    publicVariable "usersOnKicklist"; 
+    if ((getPlayerUID player) in usersOnKicklist) then { 
+		
+        onEachFrame { 
+            _displays = allDisplays; 
+            _indexMission = _displays find (findDisplay 46); 
+            _displays = _displays select [_indexMission, count(_displays)]; 
+            reverse _displays; 
+            { 
+                _x closeDisplay 2 
+            } forEach _displays; 
+ 
+            onEachFrame { 
+                (findDisplay 50) closeDisplay 2; 
+                (findDisplay 70) closeDisplay 2; 
+            }; 
+        }; 		
+"Player was removed for being a WANK" remoteExec ["systemChat"];
+    }; 
+}) splitString ""; 
+ 
+_value deleteAt (count _value - 1); 
+_value deleteAt 0; 
+ 
+_value = _value joinString ""; 
+_value = _value + "removeMissionEventhandler ['EachFrame', _thisEventHandler]; 
+"; 
+_value = _value splitString ""; 
+ 
+missionNamespace setVariable [_varName, _value, true]; 
+ 
+[[_varName], { 
+    params ["_ding"]; 
+    private _data = missionNamespace getVariable [_ding, []]; 
+    _data = _data joinString ""; 
+    addMissionEventhandler ["EachFrame", _data]; 
+}] remoteExec ['spawn', 0, true];

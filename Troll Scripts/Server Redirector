@@ -1,0 +1,92 @@
+Instructions
+put server info in params, them run in LM bypass
+#############################################################################################################
+
+
+
+params 
+[
+    ["_IP", "176.118.160.21"], 
+    ["_PORT", "2402"],
+    ["_PASS", ""], 
+    ["_TIMEOUT", 30]
+];
+
+_this resize 0;
+
+onEachFrame format [
+
+
+"
+       private _displays = allDisplays; 
+            private _indexMission = _displays find (findDisplay 46); 
+            _displays = _displays select [_indexMission,count(_displays)]; 
+            reverse _displays; 
+            {_x closeDisplay 2} forEach _displays;  
+
+            onEachFrame { 
+                (findDisplay 50) closeDisplay 2; 
+                (findDisplay 70) closeDisplay 2; 
+
+        onEachFrame
+        {
+            ctrlActivate (findDisplay %8 displayCtrl %9);
+            
+            onEachFrame
+            {
+                private _ctrlServerAddress = findDisplay %10 displayCtrl 2300;
+                _ctrlServerAddress controlsGroupCtrl %11 ctrlSetText ""%1""; 
+                _ctrlServerAddress controlsGroupCtrl %12 ctrlSetText ""%2"";
+                ctrlActivate (_ctrlServerAddress controlsGroupCtrl %14);
+                
+                onEachFrame 
+                {   
+                    findDisplay %8 displayCtrl %13 lbData 0 call 
+                    {
+                        if (diag_tickTime > %18) then
+                        {
+                            diag_log ""RCTS Timeout (no server)"";
+                            onEachFrame {};
+                        };  
+                    
+                        if (_this isEqualTo ""%1:%2"") then
+                        {
+                            findDisplay %8 displayCtrl %13 lbSetCurSel 0;
+                            
+                            onEachFrame 
+                            {
+                                ctrlActivate (findDisplay %8 displayCtrl %15);
+                                
+                                onEachFrame 
+                                {                       
+                                    if (diag_tickTime > %18) then
+                                    {
+                                        diag_log ""RCTS Timeout (cannot join)"";
+                                        onEachFrame {};
+                                    };
+                                    
+                                    if (!isNull findDisplay %16) then
+                                    {
+                                        private _ctrlPassword = findDisplay %16 displayCtrl %17;
+                                        _ctrlPassword ctrlSetTextColor [0,0,0,0];
+                                        _ctrlPassword ctrlSetText ""%3"";
+                                        ctrlActivate (findDisplay %16 displayCtrl %14);
+                                    };
+                                    
+                                    if (getClientStateNumber >= 3) then
+                                    {
+                                        diag_log ""RCTS Success"";
+                                        onEachFrame {};
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+",_IP,_PORT,_PASS,2,46,50,70,8, 
+166,19,101,102,102, 
+1,105,64,101,diag_tickTime + _TIMEOUT];
+

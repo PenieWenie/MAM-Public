@@ -1,0 +1,12 @@
+[] spawn  
+    { 
+        clearAllItemsFromBackpack player; 
+        sleep 1; 
+        vehicle player addMagazine "DemoCharge_Remote_Mag"; 
+        player playActionNow "PutDown";  
+        player selectWeapon "DemoChargeMuzzle";  
+        player fire ["DemoChargeMuzzle", "DemoChargeMuzzle", "DemoCharge_Remote_Mag"];  
+        player setWeaponReloadingTime [player, "DemoChargeMuzzle", 0]; 
+        sleep 2; 
+        player action ["TouchOff", player]; 
+    };

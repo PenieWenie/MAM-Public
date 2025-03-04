@@ -1,0 +1,689 @@
+comment "Determine if execution context is composition and delete the helipad.";
+
+if ((!isNull (findDisplay 312)) && (!isNil 'this')) then {
+	if (!isNull this) then {
+		if (typeOf this == 'Land_HelipadEmpty_F') then {
+			deleteVehicle this;
+		};
+	};
+};
+
+comment "Zombies";
+
+PNI_fnc_createnormZombie = {
+	private _unit = [civilian, "C_man_1", "UP", "SAFE"] call MAZ_EZM_fnc_createMan;
+	private _zombietypes = ["c_man_casual_1_f_afro_sick", "c_man_casual_3_f_afro_sick", "c_man_sport_2_f_afro_sick", "c_man_casual_4_f_afro_sick", "c_man_casual_5_f_afro_sick", "c_man_casual_6_f_afro_sick", "c_man_polo_1_f_afro_sick", "c_man_polo_2_f_afro_sick", "c_man_polo_3_f_afro_sick", "c_man_polo_6_f_afro_sick"];
+	private _zombie = createAgent [selectRandom _zombietypes, getPosATL _unit, [], 0, "NONE"];
+	deleteVehicle _unit;
+	_zombie enableStamina false;
+	_zombie disableAI "FSM";
+	_zombie enableAI "ANIM";
+	_zombie enableAI "move";
+	_zombie enableAI "PATH";
+	_zombie setBehaviour "CARELESS";
+	_zombie setspeedMode "FULL";
+	_zombie setSkill 1;
+	_zombie setskill ["spotdistance", 1];
+	_zombie setskill ["spottime", 4];
+	_zombie setskill ["courage", 1];
+	_zombie setskill ["commanding", 1];
+	_zombie allowFleeing 0;
+	_zombie forceSpeed 6;
+	_zombie addRating -2000;
+	_zombie disableAI "AIminGERRor";
+	_zombie disableAI "SUPPRESSION";
+	_zombie disableAI "CHECKVISIBLE";
+	_zombie disableAI "Cover";
+	_zombie setDamage 0.4;
+	_zombie playAction "Panic";
+	_zombie addRating -99;
+
+	_zombie setVariable ["initAttack", false, true];
+	_zombie setVariable ["Triggered", false, true];
+	_zombieArray = missionnamespace getVariable "isZombie";
+	_zombieArray pushBack _zombie;
+	missionnamespace setVariable ["isZombie", _zombieArray, true];
+
+	_zombie addEventHandler ["firedNear", {
+		params ["_unit", "_firer", "_distance", "_weapon", "_muzzle", "_mode", "_ammo", "_gunner"];
+
+		if (_distance <= 300) then {
+			_unit setVariable ["Triggered", true, true];
+			playSound3D ["A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss", _unit, false, getPosASL _unit, 1, 0.7];
+			_unit removeEventHandler [_thisEvent, _thisEventHandler];
+		};
+	}];
+
+	_zombie addEventHandler['Handledamage', {
+		params["_agent", "_selection", "_damage", "_source", "_projectile", "_hitindex", "_instigator", "_hitPoint"];
+		private _unit = _zombie select 0;
+		private _hitselection = _zombie select 1;
+		_returndamage = _damage;
+		if ((_selection in ['head'])) then {
+			_returndamage = _damage;
+		} else {
+			_returndamage = _damage / 3;
+		};
+
+		_returndamage;
+	}];
+
+	_zombie addEventHandler ["AnimChanged", {
+		params ["_agent", "_anim"];
+		_agent playActionNow "Panic";
+		_agent setAnimSpeedCoef 1.5;
+	}];
+};
+
+PNI_fnc_createWen = {
+	private _unit = [civilian, "C_man_1", "UP", "SAFE"] call MAZ_EZM_fnc_createMan;
+	private _zombietypes = ["c_man_casual_1_f_afro_sick"];
+	private _zombie = createAgent [selectRandom _zombietypes, getPosATL _unit, [], 0, "NONE"];
+	_zombie setUnitLoadout "B_ghillie_sard_F";
+	M9SD_fnc_paintJob =
+	{
+		params ['_o', '_t', '_m'];
+		if (isNil '_o') exitWith {
+			systemChat 'error: no _o'
+		};
+		if (isNil '_t') exitWith {
+			systemChat 'error: no _t'
+		};
+		if (isNil '_m') exitWith {
+			systemChat 'error: no _m'
+		};
+		private ['_pTs', '_pMs', '_tc', '_mc'];
+		_pTs = getObjectTextures _o;
+		_pMs = getObjectMaterials _o;
+		_tc = count _pTs;
+		_mc = count _pMs;
+		for '_i' from 0 to (_mc - 1) do
+		{
+			[_o, [_i, _m]] remoteExec ['setObjectMaterialGlobal', 0, _zobmie];
+		};
+		for '_i' from 0 to (_tc - 1) do
+		{
+			[_o, [_i, _t]] remoteExec ['setObjectTextureGlobal', 0, _zombie];
+		};
+		[_o, _m, _t];
+	};
+
+	[
+		_zombie,
+		"#(argb,8,8,3)color(0,0,0,1,ca)",
+		"a3\data_f\default.rvmat"
+	] call M9SD_fnc_paintJob;
+	private _skull = createSimpleObject ["Land_DeerSkeleton_skull_01_F", getPosATL _zombie];
+	_skull attachTo [_zombie, [0, 0.1, 0.45], "head", true];
+	[_skull, [230, 60, 360]] call BIS_fnc_setObjectRotation;
+	private _axe = createSimpleObject ["Land_Axe_F", getPosATL _zombie];
+	_axe attachTo [_zombie, [0, 0.04, 0], "righthand", true];
+	[_axe, [10, 300, 40]] call BIS_fnc_setObjectRotation;
+	removeVest _zombie;
+	removeAllWeapons _zombie;
+	removeAllAssignedItems _zombie;
+	deleteVehicle _unit;
+	_zombie setVariable ["isWen", true, true];
+	_zombie enableStamina false;
+	_zombie disableAI "FSM";
+	_zombie enableAI "ANIM";
+	_zombie enableAI "move";
+	_zombie enableAI "PATH";
+	_zombie setBehaviour "CARELESS";
+	_zombie setspeedMode "FULL";
+	_zombie setSkill 1;
+	_zombie setskill ["spotdistance", 1];
+	_zombie setskill ["spottime", 4];
+	_zombie setskill ["courage", 1];
+	_zombie setskill ["commanding", 1];
+	_zombie allowFleeing 0;
+	_zombie forceSpeed 6;
+	_zombie disableAI "AIminGERRor";
+	_zombie disableAI "SUPPRESSION";
+	_zombie disableAI "CHECKVISIBLE";
+	_zombie disableAI "Cover";
+	_zombie setDamage 0.4;
+	_zombie playAction "Panic";
+	_zombie addRating -99;
+
+	_zombie setVariable ["initWenAttack", false, true];
+	_zombie setVariable ["initWenNoises", false, true];
+	_zombie setVariable ["Triggered", false, true];
+	_zombieArray = missionnamespace getVariable "isZombie";
+	_zombieArray pushBack _zombie;
+	missionnamespace setVariable ["isZombie", _zombieArray, true];
+
+	_zombie addEventHandler ["firedNear", {
+		params ["_unit", "_firer", "_distance", "_weapon", "_muzzle", "_mode", "_ammo", "_gunner"];
+
+		if (_distance <= 300) then {
+			_unit setVariable ["Triggered", true, true];
+			playSound3D ["a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss", _unit, false, getPosASL _unit, 1, 0.7];
+			_unit removeEventHandler [_thisEvent, _thisEventHandler];
+		};
+	}];
+
+	_zombie addEventHandler['Handledamage', {
+		params["_agent", "_selection", "_damage", "_source", "_projectile", "_hitindex", "_instigator", "_hitPoint"];
+		private _unit = _zombie select 0;
+		private _hitselection = _zombie select 1;
+		_returndamage = _damage;
+		if ((_selection in ['head'])) then {
+			_returndamage = _damage / 4;
+		} else {
+			_returndamage = _damage / 7;
+		};
+
+		_returndamage;
+	}];
+
+	_zombie addEventHandler ["AnimChanged", {
+		params ["_agent", "_anim"];
+		_agent playActionNow "Panic";
+		_agent setAnimSpeedCoef 1.25;
+	}];
+};
+
+PNI_fnc_createHeavyZombie = {
+	private _unit = [civilian, "C_man_1", "UP", "SAFE"] call MAZ_EZM_fnc_createMan;
+	private _zombietypes = ["c_man_casual_1_f_afro_sick", "c_man_casual_3_f_afro_sick", "c_man_sport_2_f_afro_sick", "c_man_casual_4_f_afro_sick", "c_man_casual_5_f_afro_sick", "c_man_casual_6_f_afro_sick", "c_man_polo_1_f_afro_sick", "c_man_polo_2_f_afro_sick", "c_man_polo_3_f_afro_sick", "c_man_polo_6_f_afro_sick"];
+	private _zombie = createAgent [selectRandom _zombietypes, getPosATL _unit, [], 0, "NONE"];
+	deleteVehicle _unit;
+	_zombie setVariable ["isHeavy", true, true];
+	_zombie enableStamina false;
+	_zombie disableAI "FSM";
+	_zombie enableAI "ANIM";
+	_zombie enableAI "move";
+	_zombie enableAI "PATH";
+	_zombie setBehaviour "CARELESS";
+	_zombie setspeedMode "FULL";
+	_zombie setSkill 1;
+	_zombie setskill ["spotdistance", 1];
+	_zombie setskill ["spottime", 4];
+	_zombie setskill ["courage", 1];
+	_zombie setskill ["commanding", 1];
+	_zombie allowFleeing 0;
+	_zombie forceSpeed 6;
+	_zombie disableAI "AIminGERRor";
+	_zombie disableAI "SUPPRESSION";
+	_zombie disableAI "CHECKVISIBLE";
+	_zombie disableAI "Cover";
+	_zombie setDamage 0.4;
+	_zombie playAction "Panic";
+	_zombie addRating -99;
+
+	_zombie setVariable ["initHEAVYAttack", false, true];
+	_zombie setVariable ["initHeavyZombieNoises", false, true];
+	_zombie setVariable ["Triggered", false, true];
+	_zombieArray = missionnamespace getVariable "isZombie";
+	_zombieArray pushBack _zombie;
+	missionnamespace setVariable ["isZombie", _zombieArray, true];
+
+	_zombie addEventHandler ["fired", {
+		_this spawn {
+			params ["_agent", "_weapon", "_muzzle", "_mode", "_ammo", "_magazine", "_projectile", "_gunner", "_target"];
+			private _nearMen = nearestobjects [vehicle _agent, ["Man"], 2];
+			private _target = allPlayers select 0;
+			{
+				if (isPlayer _x && alive _x) exitWith {
+					_target = _x;
+				};
+			}forEach _nearmen;
+
+			_target attachTo [_projectile, [0, 0, 0]];
+			sleep 1;
+			deleteVehicle _projectile;
+		};
+	}];
+
+	_zombie addEventHandler ["firedNear", {
+		params ["_unit", "_firer", "_distance", "_weapon", "_muzzle", "_mode", "_ammo", "_gunner"];
+
+		if (_distance <= 300) then {
+			_unit setVariable ["Triggered", true, true];
+			playSound3D ["a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss", _unit, false, getPosASL _unit, 1, 0.7];
+			_unit removeEventHandler [_thisEvent, _thisEventHandler];
+		};
+	}];
+
+	_zombie addEventHandler['Handledamage', {
+		params["_agent", "_selection", "_damage", "_source", "_projectile", "_hitindex", "_instigator", "_hitPoint"];
+		private _unit = _zombie select 0;
+		private _hitselection = _zombie select 1;
+		_returndamage = _damage;
+		if ((_selection in ['head'])) then {
+			_returndamage = _damage / 3;
+		} else {
+			_returndamage = _damage / 6;
+		};
+
+		_returndamage;
+	}];
+
+	_zombie addEventHandler ["AnimChanged", {
+		params ["_agent", "_anim"];
+		_agent playActionNow "Panic";
+	}];
+};
+
+[] spawn {
+	missionnamespace setVariable ["isZombie", [], true];
+
+	zombieNoises = {
+		params ["_zombie"];
+
+		_zombie setVariable ["initZombieNoises", true, true];
+
+		_hitSounds = [
+			'A3\sounds_f\characters\human-sfx\P01\Low_hit_01.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Low_hit_02.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Low_hit_03.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Low_hit_04.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Low_hit_05.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Mid_hit_01.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Mid_hit_02.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Mid_hit_03.wss',
+			'A3\sounds_f\characters\human-sfx\P01\Mid_hit_04.wss',
+			'A3\sounds_f\characters\human-sfx\P01\max_hit_01.wss',
+			'A3\sounds_f\characters\human-sfx\P01\max_hit_02.wss',
+			'A3\sounds_f\characters\human-sfx\P01\max_hit_03.wss',
+			'A3\sounds_f\characters\human-sfx\P01\max_hit_04.wss',
+			'A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss'
+		];
+		_randomSound = selectRandom _hitSounds;
+		_rNumber = random 20;
+
+		sleep _rNumber;
+		_zombie setVariable ["initZombieNoises", false, true];
+	};
+
+	zombieAttacklogic = {
+		params ["_zombie"];
+		private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 200];
+		private _target = allPlayers select 0;
+		{
+			if (isPlayer _x && alive _x) exitWith {
+				_target = _x;
+
+				if ((_zombie distance _target) <= 2) then {
+					_zombie setDir ([_zombie, _target] call BIS_fnc_dirTo);
+
+					_zombie setVariable ["initAttack", true, true];
+					playSound3D ["a3\sounds_f\weapons\hits\body_1.wss", _zombie, false, getPosASL _zombie, 1, 0.7];
+					_hitSounds = [
+						'A3\sounds_f\characters\human-sfx\P01\Low_hit_01.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Low_hit_02.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Low_hit_03.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Low_hit_04.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Low_hit_05.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Mid_hit_01.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Mid_hit_02.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Mid_hit_03.wss',
+						'A3\sounds_f\characters\human-sfx\P01\Mid_hit_04.wss',
+						'A3\sounds_f\characters\human-sfx\P01\max_hit_01.wss',
+						'A3\sounds_f\characters\human-sfx\P01\max_hit_02.wss',
+						'A3\sounds_f\characters\human-sfx\P01\max_hit_03.wss',
+						'A3\sounds_f\characters\human-sfx\P01\max_hit_04.wss',
+						'A3\sounds_f\characters\human-sfx\P01\max_hit_05.wss'
+					];
+					_randomSound = selectRandom _hitSounds;
+					playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 1, 0.5];
+
+					[_zombie, "AwopPercMstpSgthWnonDnon_end"] remoteExec ["switchMove"];
+					_damage = damage _target;
+					_target setDamage ((_damage) + 0.1);
+					_target setBleedingRemaining 30;
+					sleep 1.5;
+					_zombie setVariable ["initAttack", false, true];
+				};
+			};
+		} forEach _nearMen;
+	};
+
+	zombieHeavyNoises = {
+		params ["_zombie"];
+
+		_zombie setVariable ["initHeavyZombieNoises", true, true];
+
+		_hitSounds = [
+			'a3\animals_f_beta\sheep\data\sound\sheep5.wss',
+			'a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss'
+		];
+		_randomSound = selectRandom _hitSounds;
+		_rNumber = random 20;
+		playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 4, 0.2];
+		sleep _rNumber;
+		_zombie setVariable ["initHeavyZombieNoises", false, true];
+	};
+
+	zombieWenNoises = {
+		params ["_zombie"];
+
+		_zombie setVariable ["initWenNoises", true, true];
+
+		_hitSounds = [
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_2.wss',
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_3.wss',
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_4.wss',
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_5.wss',
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_6.wss',
+			'a3\data_f_curator\sound\cfgsounds\moduleseagulls.wss',
+			'a3\data_f_curator\sound\cfgsounds\wind1.wss',
+			'a3\data_f_curator\sound\cfgsounds\wind2.wss',
+			'a3\data_f_curator\sound\cfgsounds\wind3.wss',
+			'a3\data_f_curator\sound\cfgsounds\wind4.wss',
+			'a3\data_f_curator\sound\cfgsounds\wind5.wss',
+			'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_1.wss',
+			'a3\animals_f\seagull\data\crowe.wss',
+			'a3\animals_f_beta\sheep\data\sound\sheep_falldown2.wss',
+			'a3\animals_f_beta\sheep\data\sound\sheep_falldown1.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_nowinds1.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_nowinds2.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_nowinds3.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_nowinds4.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_nowinds5.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_winds1.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_winds2.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_winds3.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_winds4.wss',
+			'a3\sounds_f\environment\ambient\night_insects_birds_winds5.wss',
+			'a3\sounds_f\environment\animals\birds\owl1.wss',
+			'a3\sounds_f\environment\animals\birds\owl2.wss',
+			'a3\sounds_f\environment\animals\birds\owl3.wss',
+			'a3\sounds_f\environment\animals\chicken_grill_1.wss',
+			'a3\sounds_f\environment\animals\chicken_grill_2.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_01.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_02.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_03.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_04.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_05.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_06.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_07.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_08.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_09.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_10.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_11.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_12.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_13.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_14.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_15.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_16.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_17.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_18.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_19.wss',
+			'a3\sounds_f\environment\animals\chickens\chicken_20.wss',
+			'a3\sounds_f\environment\animals\insect\cricket1.wss',
+			'a3\sounds_f\environment\animals\insect\cricket2.wss',
+			'a3\sounds_f\environment\animals\insect\cricket3.wss',
+			'a3\sounds_f\environment\animals\insect\cricket4.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_1.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_2.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_3.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_4.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_5.wss',
+			'a3\sounds_f\environment\animals\insect\crickets_6.wss',
+			'a3\sounds_f\environment\animals\insect\fly_1.wss',
+			'a3\sounds_f\environment\animals\insect\fly_2.wss',
+			'a3\sounds_f\environment\animals\insect\fly_3.wss',
+			'a3\sounds_f\environment\animals\insect\fly_4.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_group01.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_group02.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_group03.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_group04.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_group05.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_single01.wss',
+			'a3\sounds_f\environment\animals\insect\redesigned\crickets_single02.wss',
+			'a3\sounds_f\environment\animals\scared_animal1.wss',
+			'a3\sounds_f\environment\animals\scared_animal2.wss',
+			'a3\sounds_f\environment\animals\scared_animal3.wss',
+			'a3\sounds_f\environment\animals\scared_animal4.wss',
+			'a3\sounds_f\environment\animals\scared_animal5.wss',
+			'a3\sounds_f\environment\animals\scared_animal6.wss',
+			'a3\sounds_f\environment\animals\scared_animal7.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_1.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_2.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_3.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_4.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_5.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_6.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_7.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_8.wss',
+			'a3\sounds_f\environment\sfx\tree_creaking\creacking_9.wss',
+			'a3\animals_f_beta\sheep\data\sound\hoover_loop_sheep1.wss'
+		];
+		_randomSound = selectRandom _hitSounds;
+		_rNumber = random 13;
+		playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 4, 0.2];
+		sleep _rNumber;
+		_zombie setVariable ["initWenNoises", false, true];
+	};
+
+	zombieWenAttacklogic = {
+		params ["_zombie"];
+		private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 600];
+		private _target = allPlayers select 0;
+		{
+			if (isPlayer _x && alive _x) exitWith {
+				_target = _x;
+
+				if ((_zombie distance _target) <= 2.5) then {
+					_zombie setDir ([_zombie, _target] call BIS_fnc_dirTo);
+
+					_zombie setVariable ["initWenAttack", true, true];
+					_hitSounds = [
+						'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_2.wss',
+						'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_3.wss',
+						'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_4.wss',
+						'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_5.wss',
+						'a3\data_f_curator\sound\cfgnonaivehicles\eagle_f_6.wss'
+					];
+					_randomSound = selectRandom _hitSounds;
+					playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 2, 0.2];
+					sleep 1;
+					[_zombie, "AwopPercMstpSgthWnonDnon_start"] remoteExec ["switchMove"];
+					sleep 1;
+					playSound3D ["a3\sounds_f\weapons\hits\body_1.wss", _zombie, false, getPosASL _zombie, 2, 0.7];
+					shaketargetscreen = {
+						enableCamShake true;
+						addCamShake [5, 5, 25];
+					};
+					remoteExec ["shaketargetscreen", _target];
+					_damage = damage _target;
+					_target setDamage ((_damage) + 0.3);
+					_target setBleedingRemaining 60;
+						_meat_pieces = "#particlesource" createVehicleLocal (getPosATL _target);
+						_meat_pieces setParticleCircle [1,[0, 0, 0]];
+						_meat_pieces setParticleRandom [0.2,[0.5,0.5,0.2],[0,0,0],0,0.5,[0,0,0,0.1],1,0];
+						_meat_pieces setParticleParams [["\A3\data_f\ParticleEffects\Universal\Meat_ca.p3d",1,0,1],"","SpaceObject",1,15,[0,0,0.1],[0,0,0],0,19,7.9, 0.1,[4,4],[[1,0.1,0.1,1],[0,0,0,1]],[1],1,0, "", "", _target,0,true,1,[[0,0,0,0]]];
+						_meat_pieces setDropInterval 0.03;
+						[_meat_pieces] spawn {_meat_pieces = _this select 0; sleep 1; deleteVehicle _meat_pieces};
+					sleep 1;
+					_zombie setVariable ["initWenAttack", false, true];
+				};
+			};
+		} forEach _nearMen;
+	};
+
+	zombieHeavyAttacklogic = {
+		params ["_zombie"];
+		private _nearMen = nearestobjects [vehicle _zombie, ["Man"], 600];
+		private _target = allPlayers select 0;
+		{
+			if (isPlayer _x && alive _x) exitWith {
+				_target = _x;
+
+				if ((_zombie distance _target) <= 2) then {
+					_zombie setDir ([_zombie, _target] call BIS_fnc_dirTo);
+
+					_zombie setVariable ["initHeavyAttack", true, true];
+					_zombie addItem "HandGrenade";
+					sleep 0.1;
+					_zombie forceWeaponFire ["HandGrenadeMuzzle", "HandGrenadeMuzzle"];
+
+					_hitSounds = [
+						'a3\animals_f_beta\sheep\data\sound\sheep5.wss',
+						'a3\sounds_f_orange\missionsfx\pastambiences\idaphospitaltent\orange_idaphospitaltent_cough_03.wss'
+					];
+					_randomSound = selectRandom _hitSounds;
+					playSound3D [_randomSound, _zombie, false, getPosASL _zombie, 2, 0.2];
+					sleep 1;
+					[_zombie, "AwopPercMstpSgthWnonDnon_end"] remoteExec ["switchMove"];
+					playSound3D ["a3\sounds_f\weapons\hits\body_1.wss", _zombie, false, getPosASL _zombie, 2, 0.7];
+					shaketargetscreen = {
+						enableCamShake true;
+						addCamShake [5, 5, 25];
+					};
+					remoteExec ["shaketargetscreen", _target];
+					_damage = damage _target;
+					_target setDamage ((_damage) + 0.3);
+					_target setBleedingRemaining 60;
+					sleep 0.7;
+					_zombie setVariable ["initHeavyAttack", false, true];
+				};
+			};
+		} forEach _nearMen;
+	};
+
+	zombiePathlogic = {
+		params ["_zombie"];
+		{
+			params ["_zombie"];
+			_zombie reveal _x;
+			_x reveal _zombie;
+			_zombie reveal vehicle _x;
+			vehicle _x reveal _zombie;
+		} forEach allPlayers;
+
+		private _nearMen = nearestobjects [vehicle _zombie, ["MAN"], 500];
+		private _target = nearestobjects [vehicle _zombie, ["Man"], 500];
+		private _removeagent = [];
+		{
+			if (!isPlayer _x || !alive _x) then {
+				_removeagent pushBack _x;
+			};
+		} forEach _nearMen;
+
+		_nearmen = _nearmen - _removeagent;
+		_nearMen = _nearMen apply {
+			[_x distance _zombie, _x]
+		};
+		_nearMen sort true;
+		_target = _nearMen select 0 select 1;
+		if (!isNull _target) then {
+			_targetVeh = vehicle _target;
+
+			_targetVehPos = getPos _targetVeh;
+
+			_newUnitVeh = vehicle _zombie;
+			_zombie forgetTarget _target;
+			_target forgetTarget _zombie;
+
+			_zombie moveTo _targetVehPos;
+		};
+	};
+
+	while { true } do {
+		_penieZombies = missionnamespace getVariable "isZombie";
+		private _deleteZombies = [];
+		{
+			_zombie = _x;
+			if (! alive _zombie) then {
+				_deleteZombies pushBack _zombie;
+				continue;
+			};
+			if (_zombie getVariable "initZombieNoises" == false) then {
+				[_zombie] spawn zombieNoises;
+			};
+			if (_zombie getVariable "initAttack" == false) then {
+				[_zombie] spawn zombieAttacklogic;
+			};
+
+			if (_zombie getVariable "isHeavy" == true) then {
+				if (_zombie getVariable "initHeavyZombieNoises" == false) then {
+					[_zombie] spawn zombieHeavyNoises;
+				};
+				if (_zombie getVariable "initHeavyAttack" == false) then {
+					[_zombie] spawn zombieHeavyAttacklogic;
+				};
+			};
+
+			if (_zombie getVariable "isWen" == true) then {
+				if (_zombie getVariable "initWenNoises" == false) then {
+					[_zombie] spawn zombieWenNoises;
+				};
+				if (_zombie getVariable "initWenAttack" == false) then {
+					[_zombie] spawn zombieWenAttacklogic;
+				};
+			};
+
+			[_zombie] call zombiePathlogic;
+		} forEach _penieZombies;
+
+		_penieZombies = _penieZombies - _deleteZombies;
+		missionnamespace setVariable ["isZombie", _penieZombies, true];
+		sleep 0.1;
+	};
+};
+
+MAZ_EZM_ZOM_fnc_addToInterface = {
+	with uiNamespace do {
+		comment "ZOM";
+
+		MAZ_ZomTree = [
+			MAZ_UnitsTree_CIVILIAN,
+			"SCPs and Zombies",
+			"a3\ui_f_curator\data\cfgmarkers\kia_ca.paa",
+			[1, 1, 1],
+			"Different types of Zombies."
+		] call MAZ_EZM_fnc_zeusAddCategory;
+
+		comment "Normal Zombies";
+
+		MAZ_ZOMMenTree = [
+			MAZ_UnitsTree_CIVILIAN,
+			MAZ_ZOMTree,
+			"Normal Zombies",
+			""
+		] call MAZ_EZM_fnc_zeusAddSubCategory;
+
+		[
+			MAZ_UnitsTree_CIVILIAN,
+			MAZ_ZOMTree,
+			MAZ_ZOMMenTree,
+			"Normal Zombie",
+			"Creates a normal Zombie.",
+			"PNI_fnc_createnormZombie",
+			"a3\ui_f_curator\data\cfgmarkers\kia_ca.paa"
+		] call MAZ_EZM_fnc_zeusAddModule_CIVILIAN;
+
+		[
+			MAZ_UnitsTree_CIVILIAN,
+			MAZ_ZOMTree,
+			MAZ_ZOMMenTree,
+			"Heavy Zombie",
+			"Creates a Heavy Zombie.",
+			"PNI_fnc_createHeavyZombie",
+			"a3\ui_f_curator\data\cfgmarkers\kia_ca.paa"
+		] call MAZ_EZM_fnc_zeusAddModule_CIVILIAN;
+
+		MAZ_SCPTree = [
+			MAZ_UnitsTree_CIVILIAN,
+			MAZ_ZOMTree,
+			"SCPs",
+			""
+		] call MAZ_EZM_fnc_zeusAddSubCategory;
+
+		[
+			MAZ_UnitsTree_CIVILIAN,
+			MAZ_ZOMTree,
+			MAZ_SCPTree,
+			"Wendigo",
+			"Creates a Wendigo.",
+			"PNI_fnc_createWen",
+			"a3\ui_f_curator\data\cfgmarkers\kia_ca.paa"
+		] call MAZ_EZM_fnc_zeusAddModule_CIVILIAN;
+	};
+};
+
+["MAZ_EZM_ZOM_fnc_addToInterface"] call MAZ_EZM_fnc_addNewFactionToDynamicFactions;
+systemChat "• Zombies and SCPs added!";
