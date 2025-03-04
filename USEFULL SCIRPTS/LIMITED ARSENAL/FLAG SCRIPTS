@@ -3,9 +3,9 @@
 //ATF flag
 [vehicle player, '#(rgb,512,512,3)text(1,1,"PuristaBold",0.3,"#0213f7","#eff702","------\nATF\n------")'] remoteExec ['forceFlagTexture'];
 
-//swastica
+//Peace symbol
 [vehicle player, '#(rgb,512,512,3)text(1,1,"PuristaBold",0.3,"#ff0000","##f2f2f2","     __ \n!__I__\n __I   j")'] remoteExec ['forceFlagTexture'];
 																				 
-//Joe Biden Swastica
+//Joe Biden peace symbol
 [vehicle player, '#(rgb,512,512,3)text(1,1,"PuristaBold",0.15,"#fa0505","#000000","             __JOE \n!__I__\n          __I   j Biden")'] remoteExec ['forceFlagTexture'];
 
